@@ -121,7 +121,7 @@ namespace crtorrent
             Console.WriteLine("comment: " + comment);
             Console.WriteLine("Piece Lenghth " + PieceLength.ToString());
             Console.WriteLine("NumThreads:   " + numThreads);
-            Console.WriteLine("announce urls: ");
+            Console.WriteLine("Announce urls: ");
             foreach (string url in announceUrl.ToArray())
             {
                 Console.WriteLine("Url:    " + url);
