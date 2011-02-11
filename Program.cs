@@ -41,7 +41,12 @@ namespace crtorrent
         protected internal static List<string> announceUrl = new List<string>();
         private static string AnnounceUrl
         {
-            set { if (Uri.IsWellFormedUriString(value, UriKind.Absolute)) { announceUrl.Add(value); }}
+            set { 
+                if (Uri.IsWellFormedUriString(value, UriKind.Absolute)) 
+                { 
+                    announceUrl.Add(value); 
+                }
+            }
         }
         protected internal static double pieceLength = Math.Pow(2,18);
         private static double PieceLength
@@ -62,42 +67,52 @@ namespace crtorrent
             
             for (int i =0; i < args.Length; i++)
             {
-                if (args[i].StartsWith("-"))
+                try
                 {
-                    string arg = args[i].TrimStart('-');
-                    switch (arg)
+                    if (args[i].StartsWith("-"))
                     {
-                        case "help":
-                        case "h":
-                            PrintSection(HELP);
-                            break;
-                        case "version":
-                            PrintSection(VERSION);
-                            break;
-                        case "c":
-                        case "comment":
-                            comment = GetNextArg(args, i);
-                            break;
-                        case "threads":
-                        case "t":
-                            NumThreads = MakeInt(GetNextArg(args,i), "threads");
-                            break;
-                        case "copyright":
-                            PrintSection(COPYRIGHT);
-                            break;
-                        case "announce":
-                        case "a":
-                            AnnounceUrl = GetNextArg(args,i);
-                            break;
-                        case "piece-length":
-                        case "l":
-                            PieceLength = MakeDouble(GetNextArg(args, i), "threads");
-                            break;
-                        case "outfile":
-                        case "o":
-                            outputFile = GetNextArg(args, i);
-                            break;
+                        string arg = args[i].TrimStart('-');
+                        switch (arg)
+                        {
+                            case "help":
+                            case "h":
+                                PrintSection(HELP);
+                                break;
+                            case "version":
+                                PrintSection(VERSION);
+                                break;
+                            case "c":
+                            case "comment":
+                                comment = args[i + 1];
+                                break;
+                            case "threads":
+                            case "t":
+                                NumThreads = MakeInt(args[i + 1], "threads");
+                                break;
+                            case "copyright":
+                                PrintSection(COPYRIGHT);
+                                break;
+                            case "announce":
+                            case "a":
+                                AnnounceUrl = args[i + 1];
+                                break;
+                            case "piece-length":
+                            case "l":
+                                PieceLength = MakeDouble(args[i + 1], "threads");
+                                break;
+                            case "outfile":
+                            case "o":
+                                outputFile = args[i + 1];
+                                break;
+                        }
                     }
+                }
+                catch (IndexOutOfRangeException e)
+                {
+                    throw new FatalException("Error: Argument \"" + args[i] + "\" needs a value", e);
+                }
+                catch (InvalidArgumentException e){
+                    throw new FatalException(e);
                 }
 
             }
@@ -118,8 +133,7 @@ namespace crtorrent
         {
             double result = 0;
             if(!double.TryParse(value, out result)){
-                Console.WriteLine("ERORR: INVALID VALUE TYPE WHILE PARSING " +parameter);
-                Environment.Exit(1);
+                throw new InvalidArgumentException("ERORR: Parameter \"" + parameter +"\" needs to be an number");
             }
             return result;
 
@@ -129,25 +143,12 @@ namespace crtorrent
             int result = 0;
             if (!int.TryParse(value, out result))
             {
-                Console.WriteLine("ERORR: INVALID VALUE TYPE WHILE PARSING " + parameter);
+                Console.WriteLine("ERORR: Parameter \"" + parameter +"\" needs to be an integer");
             }
             return result;
 
         }
 
-        static string GetNextArg(string[] args, int i)
-        {
-            try
-            {
-                return args[i + 1];
-            }
-            catch (IndexOutOfRangeException)
-            {
-                Console.WriteLine("ERROR: ARGUMENT " + args[i] + " NEEDS A VALUE");
-                Environment.Exit(1);
-                return "ERROR";
-            }
-        }
         static void PrintSection(string section)
         {
             switch (section)
@@ -157,7 +158,8 @@ namespace crtorrent
                     break;
                 case COPYRIGHT:
                     Console.WriteLine(@"
-   crtorrent creates torrent metainfo files from directories and files.
+crtorrent creates torrent metainfo files from directories and files.
+
 Copyright (C) 2011  Thom Wiggers
 
 This program is free software: you can redistribute it and/or modify
