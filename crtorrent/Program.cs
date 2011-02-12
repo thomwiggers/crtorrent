@@ -25,7 +25,7 @@ namespace crtorrent
 {
     class Program
     {
-        const string version = "0.1a";
+        public const string version = "0.1a";
         const string HELP = "help";
         const string COPYRIGHT = "copyright";
         const string VERSION = "version";
