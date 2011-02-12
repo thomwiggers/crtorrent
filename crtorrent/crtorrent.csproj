@@ -44,9 +44,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bencode\BencodeInt.cs" />
+    <Compile Include="Bencode\BencodeString.cs" />
+    <Compile Include="Bencode\BencodeList.cs" />
+    <Compile Include="Bencode\IBencodeItem.cs" />
     <Compile Include="FatalException.cs" />
     <Compile Include="InvalidArgumentException.cs" />
-    <Compile Include="MetafileContainer.cs" />
+    <Compile Include="MetafileCreator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

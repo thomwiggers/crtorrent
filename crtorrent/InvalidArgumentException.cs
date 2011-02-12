@@ -25,7 +25,7 @@ namespace crtorrent
     public class InvalidArgumentException : Exception
     {
         public InvalidArgumentException()
-            : base(message)
+            : base()
         { 
             
         }

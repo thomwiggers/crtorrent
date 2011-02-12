@@ -1,8 +1,7 @@
-﻿using System;
-/**
- * crtorrent's  Exception for situations that force us to end
+﻿/**
+ * crtorrent
  * 
- * Exception
+ *  Interface implementation of Bencode Items
  * 
     crtorrent creates torrent metainfo files from directories and files.
     Copyright (C) 2011  Thom Wiggers
@@ -20,33 +19,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-namespace crtorrent
+namespace crtorrent.Bencode
 {
-
-    public class FatalException : Exception
+    interface IBencodeItem
     {
-        public FatalException() 
-            : base()
-        {
-
-        }
-
-        public FatalException(String message)
-            : base(message)
-        {
-
-        }
-
-        public FatalException(String message, Exception innerException)
-            : base(message, innerException)
-        {
-
-        }
-
-        public FatalException(Exception innerException)
-            : base(innerException.Message, innerException)
-        {
-
-        }
+        public override string ToString();
     }
 }

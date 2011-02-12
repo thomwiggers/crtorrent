@@ -3,7 +3,7 @@
 namespace crtorrent
 {
 
-    private class MetafileContainer
+    public class MetafileCreator
     {
 
     }
