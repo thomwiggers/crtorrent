@@ -23,7 +23,7 @@
 using System.Collections.Generic;
 namespace crtorrent.Bencode
 {
-    public class BencodeDictionary : Dictionary<string,IBencodeItem>,IBencodeItem
+    class BencodeDictionary : Dictionary<string,IBencodeItem>,IBencodeItem
     {
         BencodeDictionary(IDictionary<string,IBencodeItem> dictionary)
             : base(dictionary)
@@ -61,7 +61,7 @@ namespace crtorrent.Bencode
         }
         public void Add(string key, string value)
         {
-            Add(key,new BencodeString(value);
+            Add(key,new BencodeString(value));
         }
         public void Add(string key, int value)
         {

@@ -24,7 +24,7 @@ using System.Collections.Generic;
 namespace crtorrent.Bencode
 {
 
-    public class BencodeList : List<IBencodeItem>,IBencodeItem
+    class BencodeList : List<IBencodeItem>,IBencodeItem
     {
         public BencodeList()
         {

@@ -26,7 +26,7 @@ namespace crtorrent
     public class FatalException : Exception
     {
         public FatalException() 
-            : base()
+            : base("ERROR: FATAL ERROR")
         {
 
         }

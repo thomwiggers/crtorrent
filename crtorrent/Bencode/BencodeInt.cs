@@ -23,15 +23,24 @@ namespace crtorrent.Bencode
 {
     public class BencodeInt : IBencodeItem
     {
+        private bool set = false;
+        private int value;
         public int Value
         {
-            set;
-            get;
+            set
+            {
+                set = true;
+                this.value = value;
+            }
+            get 
+            { 
+                return value; 
+            }
         }
        
         public BencodeInt()
         {
-
+            
         }
 
         public BencodeInt(int value)
@@ -41,7 +50,7 @@ namespace crtorrent.Bencode
 
         public override string ToString()
         {
-            if (Value != null)
+            if (this.set)
             {
                 return "i" + Value.ToString() + "e";
             }

@@ -33,6 +33,7 @@ namespace crtorrent
         static string comment = "Created with crtorrent " + version;
         protected internal static int numThreads = 1;
         protected internal static bool privateFlag = false;
+        protected internal static bool verboseFlag = false;
         private static int NumThreads
         {
             get { return numThreads; }
@@ -41,10 +42,17 @@ namespace crtorrent
         protected internal static List<string> announceUrl = new List<string>();
         private static string AnnounceUrl
         {
-            set { 
+            set {
                 if (Uri.IsWellFormedUriString(value, UriKind.Absolute)) 
                 { 
-                    announceUrl.Add(value); 
+                    announceUrl.Add(value);
+                }
+                else if (value.Contains(","))
+                {
+                    foreach(string url in value.Split(','))
+                    {
+                        AnnounceUrl = url;
+                    }
                 }
             }
         }
@@ -62,73 +70,101 @@ namespace crtorrent
 
         static void Main(string[] args)
         {
-            PrintSection(INTRO);
-            args = Environment.GetCommandLineArgs();
-            
-            for (int i =0; i < args.Length; i++)
+            try
             {
-                try
+                PrintSection(INTRO);
+                args = Environment.GetCommandLineArgs();
+
+                for (int i = 0; i < args.Length; i++)
                 {
-                    if (args[i].StartsWith("-"))
+                    try
                     {
-                        string arg = args[i].TrimStart('-');
-                        switch (arg)
+                        if (args[i].StartsWith("-"))
                         {
-                            case "help":
-                            case "h":
-                                PrintSection(HELP);
-                                break;
-                            case "version":
-                                PrintSection(VERSION);
-                                break;
-                            case "c":
-                            case "comment":
-                                comment = args[i + 1];
-                                break;
-                            case "threads":
-                            case "t":
-                                NumThreads = MakeInt(args[i + 1], "threads");
-                                break;
-                            case "copyright":
-                                PrintSection(COPYRIGHT);
-                                break;
-                            case "announce":
-                            case "a":
-                                AnnounceUrl = args[i + 1];
-                                break;
-                            case "piece-length":
-                            case "l":
-                                PieceLength = MakeDouble(args[i + 1], "threads");
-                                break;
-                            case "outfile":
-                            case "o":
-                                outputFile = args[i + 1];
-                                break;
-                            case "p":
-                            case "private":
-                                privateFlag = true;
-                                break;
+                            string arg = args[i].TrimStart('-');
+                            switch (arg)
+                            {
+                                case "help":
+                                case "h":
+                                    PrintSection(HELP);
+                                    break;
+                                case "version":
+                                    PrintSection(VERSION);
+                                    break;
+                                case "c":
+                                case "comment":
+                                    comment = args[i + 1];
+                                    break;
+                                case "threads":
+                                case "t":
+                                    NumThreads = MakeInt(args[i + 1], "threads");
+                                    break;
+                                case "copyright":
+                                    PrintSection(COPYRIGHT);
+                                    break;
+                                case "announce":
+                                case "a":
+                                    AnnounceUrl = args[i + 1];
+                                    break;
+                                case "piece-length":
+                                case "l":
+                                    PieceLength = MakeDouble(args[i + 1], "piece-length");
+                                    break;
+                                case "outfile":
+                                case "o":
+                                    outputFile = args[i + 1];
+                                    break;
+                                case "p":
+                                case "private":
+                                    privateFlag = true;
+                                    break;
+                                case "v":
+                                case "verbose":
+                                    verboseFlag = true;
+                                    break;
+                            }
                         }
                     }
+                    catch (IndexOutOfRangeException e)
+                    {
+                        throw new FatalException("Error: Argument \"" + args[i] + "\" needs a value", e);
+                    }
+                    catch (InvalidArgumentException e)
+                    {
+                        throw new FatalException(e);
+                    }
+
                 }
-                catch (IndexOutOfRangeException e)
+                if (verboseFlag)
                 {
-                    throw new FatalException("Error: Argument \"" + args[i] + "\" needs a value", e);
-                }
-                catch (InvalidArgumentException e){
-                    throw new FatalException(e);
+                    Console.WriteLine("################# DETAILS ########################");
+                    Console.WriteLine("comment:       {0}", comment);
+                    Console.WriteLine("Piece Lenghth  {0}", PieceLength.ToString());
+                    Console.WriteLine("NumThreads:    {0}",numThreads);
+                    Console.WriteLine("Output file:   {0}",outputFile);
+                    Console.WriteLine("Private:       {0}", privateFlag);
+                    Console.WriteLine("Announce urls: ");
+                    foreach (string url in announceUrl.ToArray())
+                    {
+                        Console.WriteLine("- Url:         {0}", url);
+                    }
                 }
 
+                //TODO PROCCESSING HERE
             }
-
-            Console.WriteLine("#################DEBUG########################");
-            Console.WriteLine("comment: " + comment);
-            Console.WriteLine("Piece Lenghth " + PieceLength.ToString());
-            Console.WriteLine("NumThreads:   " + numThreads);
-            Console.WriteLine("Announce urls: ");
-            foreach (string url in announceUrl.ToArray())
+            catch (FatalException e)
             {
-                Console.WriteLine("Url:    " + url);
+                Console.WriteLine("A fatal error occurred, and I could not continue: \r\n");
+                Console.WriteLine(e.Message);
+                if (e.InnerException != null && verboseFlag)
+                {
+                    Console.WriteLine("@@@Inner Exception: {0}", e.Message); 
+                }
+                if (verboseFlag)
+                {
+                    Console.WriteLine(e.StackTrace);
+                }
+                Console.WriteLine("\r\n Type {0} --help for help about this program", Environment.GetCommandLineArgs()[0]);
             }
         }
 
@@ -137,7 +173,7 @@ namespace crtorrent
         {
             double result = 0;
             if(!double.TryParse(value, out result)){
-                throw new InvalidArgumentException("ERORR: Parameter \"" + parameter +"\" needs to be an number");
+                throw new InvalidArgumentException("ERORR: Parameter \"" + parameter +"\" needs to be a number");
             }
             return result;
 
@@ -147,7 +183,7 @@ namespace crtorrent
             int result = 0;
             if (!int.TryParse(value, out result))
             {
-                Console.WriteLine("ERORR: Parameter \"" + parameter +"\" needs to be an integer");
+                throw new InvalidArgumentException("ERORR: Parameter \"" + parameter + "\" needs to be a number");
             }
             return result;
 
@@ -158,7 +194,23 @@ namespace crtorrent
             switch (section)
             {
                 case HELP:
-                    Console.WriteLine("Use -h --help or -help for help");
+                    Console.WriteLine(@"
+--help (-h)                    Displays this help message.
+--version                      Displays version information.
+--copyright                    Displays copyright and warranty information.
+--threads (-t) <value>         Sets the number of threads used.
+                                    (Defaults to 1)
+--comment (-c) <comment>       Sets the comment in the metafile.
+--piece-length (-l) <length>   Sets the piecelength to 2^<length>.
+--announce (-a) <url>[,<url>]  Sets the announce URL. Use more than one parameter
+                               to specify an announce list. Erronenous URLs are 
+                               omitted without warning.
+--private (-p)                 Sets the private flag.
+--outfile (-o) <filename>      Sets the name of the output file.
+                                    (Defaults to input file/foldername)
+--verbose                      Prints extra information about what is going on.
+
+");
                     break;
                 case COPYRIGHT:
                     Console.WriteLine(@"
