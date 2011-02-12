@@ -21,7 +21,7 @@
  */
 namespace crtorrent.Bencode
 {
-    class BencodeString : IBencodeItem
+    public class BencodeString : IBencodeItem
     {
         public string Value
         {

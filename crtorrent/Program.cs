@@ -32,7 +32,7 @@ namespace crtorrent
         const string INTRO = "intro";
         static string comment = "Created with crtorrent " + version;
         protected internal static int numThreads = 1;
-        
+        protected internal static bool privateFlag = false;
         private static int NumThreads
         {
             get { return numThreads; }
@@ -103,6 +103,10 @@ namespace crtorrent
                             case "outfile":
                             case "o":
                                 outputFile = args[i + 1];
+                                break;
+                            case "p":
+                            case "private":
+                                privateFlag = true;
                                 break;
                         }
                     }
