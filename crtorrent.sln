@@ -9,12 +9,22 @@ Global
 		Manager = AnkhSVN - Subversion Support for Visual Studio
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
 		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2B42D691-798D-4196-8722-40A27A436729}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{2B42D691-798D-4196-8722-40A27A436729}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{2B42D691-798D-4196-8722-40A27A436729}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{2B42D691-798D-4196-8722-40A27A436729}.Debug|x86.ActiveCfg = Debug|x86
 		{2B42D691-798D-4196-8722-40A27A436729}.Debug|x86.Build.0 = Debug|x86
+		{2B42D691-798D-4196-8722-40A27A436729}.Release|Any CPU.ActiveCfg = Release|x86
+		{2B42D691-798D-4196-8722-40A27A436729}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{2B42D691-798D-4196-8722-40A27A436729}.Release|Mixed Platforms.Build.0 = Release|x86
 		{2B42D691-798D-4196-8722-40A27A436729}.Release|x86.ActiveCfg = Release|x86
 		{2B42D691-798D-4196-8722-40A27A436729}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection

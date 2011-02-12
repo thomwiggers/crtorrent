@@ -21,11 +21,13 @@
  */
 using System;
 using System.Collections.Generic;
+using System.IO;
 namespace crtorrent
 {
     class Program
     {
         public const string version = "0.1a";
+        public const string fullVersionInformation = "Alpha build, does not do anything yet.";
         const string HELP = "help";
         const string COPYRIGHT = "copyright";
         const string VERSION = "version";
@@ -34,6 +36,7 @@ namespace crtorrent
         protected internal static int numThreads = 1;
         protected internal static bool privateFlag = false;
         protected internal static bool verboseFlag = false;
+        protected internal static bool dateFlag = true;
         private static int NumThreads
         {
             get { return numThreads; }
@@ -56,6 +59,8 @@ namespace crtorrent
                 }
             }
         }
+        protected internal static string path = "";
+        protected internal static string targetType;
         protected internal static double pieceLength = Math.Pow(2,18);
         private static double PieceLength
         {
@@ -122,6 +127,10 @@ namespace crtorrent
                                 case "verbose":
                                     verboseFlag = true;
                                     break;
+                                case "no-date":
+                                case "d":
+                                    dateFlag = false;
+                                    break;
                             }
                         }
                     }
@@ -135,6 +144,9 @@ namespace crtorrent
                     }
 
                 }
+                path = args[args.Length - 1];
+                new MetafileCreator(path, null, true, true, "", "", 1, 2.0);
+
                 if (verboseFlag)
                 {
                     Console.WriteLine("################# DETAILS ########################");
@@ -143,6 +155,7 @@ namespace crtorrent
                     Console.WriteLine("NumThreads:    {0}",numThreads);
                     Console.WriteLine("Output file:   {0}",outputFile);
                     Console.WriteLine("Private:       {0}", privateFlag);
+                    Console.WriteLine("Path:        {0}", path);
                     Console.WriteLine("Announce urls: ");
                     foreach (string url in announceUrl.ToArray())
                     {
@@ -232,7 +245,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.");
                     break;
                 case VERSION:
-                    Console.WriteLine("This is crtorrent version " + version + " copyright Thom Wiggers");
+                    Console.WriteLine("This is crtorrent version {0} © {1} Thom Wiggers",version, DateTime.UtcNow.Year);
+                    Console.WriteLine(fullVersionInformation);
                     Console.WriteLine("This software is available under the GPL Public License");
                     break;
                 case INTRO:
