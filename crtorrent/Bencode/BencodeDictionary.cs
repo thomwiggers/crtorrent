@@ -25,19 +25,24 @@ namespace crtorrent.Bencode
 {
     class BencodeDictionary : Dictionary<string,IBencodeItem>,IBencodeItem
     {
-        BencodeDictionary(IDictionary<string,IBencodeItem> dictionary)
+        public BencodeDictionary()
+            : base()
+        {
+
+        }
+        public BencodeDictionary(IDictionary<string,IBencodeItem> dictionary)
             : base(dictionary)
         {
 
         }
-        BencodeDictionary(IDictionary<string, string> dictionary)
+        public BencodeDictionary(IDictionary<string, string> dictionary)
         {
             foreach (KeyValuePair<string, string> item in dictionary)
             {
                 Add(item.Key, new BencodeString(item.Value));
             }
         }
-        BencodeDictionary(IDictionary<string, int> dictionary)
+        public BencodeDictionary(IDictionary<string, int> dictionary)
         {
             foreach (KeyValuePair<string, int> item in dictionary)
             {
@@ -67,15 +72,15 @@ namespace crtorrent.Bencode
         {
             Add(key, new BencodeInt(value));
         }
-        public void Add(string key, string[] list)
+        public void Add(string key, params string[] list)
         {
             Add(key, new BencodeList(list));
         }
-        public void Add(string key, int[] list)
+        public void Add(string key, params int[] list)
         {
             Add(key, new BencodeList(list));
         }
-        public void Add(string key, IBencodeItem[] list)
+        public void Add(string key, params IBencodeItem[] list)
         {
             Add(key, new BencodeList(list));
         }

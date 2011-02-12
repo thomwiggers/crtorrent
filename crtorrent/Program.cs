@@ -207,7 +207,7 @@ namespace crtorrent
                                omitted without warning.
 --private (-p)                 Sets the private flag.
 --outfile (-o) <filename>      Sets the name of the output file.
-                                    (Defaults to input file/foldername)
+                                    (Defaults to input <file/foldername>.torrent)
 --verbose                      Prints extra information about what is going on.
 
 ");

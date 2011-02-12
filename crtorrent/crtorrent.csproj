@@ -44,6 +44,7 @@
     <Compile Include="Bencode\BencodeList.cs" />
     <Compile Include="Bencode\BencodeDictionary.cs" />
     <Compile Include="Bencode\IBencodeItem.cs" />
+    <Compile Include="Bencode\BencodeTest.cs" />
     <Compile Include="FatalException.cs" />
     <Compile Include="InvalidArgumentException.cs" />
     <Compile Include="MetafileCreator.cs" />
