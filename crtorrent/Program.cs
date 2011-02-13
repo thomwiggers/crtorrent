@@ -26,7 +26,8 @@ namespace crtorrent
 {
     class Program
     {
-        public const string version = "0.1a";
+        public const string appName = "crtorrent";
+        public const string version = "0.1a  " + Environment.OSVersion.Platform;
         public const string fullVersionInformation = "Alpha build, does not do anything yet.";
         const string HELP = "help";
         const string COPYRIGHT = "copyright";
@@ -37,18 +38,19 @@ namespace crtorrent
         protected internal static bool privateFlag = false;
         protected internal static bool verboseFlag = false;
         protected internal static bool dateFlag = true;
+        protected internal static string name = string.Empty;
         private static int NumThreads
         {
             get { return numThreads; }
             set { if (value > 0) { numThreads = value; } }
         }
-        protected internal static List<string> announceUrl = new List<string>();
+        protected internal static List<string> announceUrls = new List<string>();
         private static string AnnounceUrl
         {
             set {
                 if (Uri.IsWellFormedUriString(value, UriKind.Absolute)) 
                 { 
-                    announceUrl.Add(value);
+                    announceUrls.Add(value);
                 }
                 else if (value.Contains(","))
                 {
@@ -79,6 +81,8 @@ namespace crtorrent
             {
                 PrintSection(INTRO);
                 args = Environment.GetCommandLineArgs();
+
+                
 
                 for (int i = 0; i < args.Length; i++)
                 {
@@ -131,6 +135,10 @@ namespace crtorrent
                                 case "d":
                                     dateFlag = false;
                                     break;
+                                case "name":
+                                case "n":
+                                    name = args[i + 1];
+                                    break;
                             }
                         }
                     }
@@ -144,26 +152,56 @@ namespace crtorrent
                     }
 
                 }
-                path = args[args.Length - 1];
-                new MetafileCreator(path, null, true, true, "", "", 1, 2.0);
 
+                //check if before last parameter doesn't take a value
+                string beforeLastArg = args[args.Length - 2].TrimStart('-');
+                switch (beforeLastArg)
+                {
+
+                    case "c":
+                    case "comment":
+                    case "threads":
+                    case "t":
+                    case "announce":
+                    case "a":
+                    case "piece-length":
+                    case "l":
+                    case "outfile":
+                    case "o":
+                    case "p":
+                    case "private":
+                    case "name":
+                    case "n":
+                        throw new FatalException("Error: No directory specified");
+                }
+
+                path = args[args.Length - 1];
+                
+                //validatie:
+                if (announceUrls.Count == 0)
+                {
+                    throw new FatalException("No announce url specified");
+                }
                 if (verboseFlag)
                 {
                     Console.WriteLine("################# DETAILS ########################");
                     Console.WriteLine("comment:       {0}", comment);
                     Console.WriteLine("Piece Lenghth  {0}", PieceLength.ToString());
-                    Console.WriteLine("NumThreads:    {0}",numThreads);
-                    Console.WriteLine("Output file:   {0}",outputFile);
+                    Console.WriteLine("NumThreads:    {0}", numThreads);
+                    Console.WriteLine("Output file:   {0}", outputFile);
                     Console.WriteLine("Private:       {0}", privateFlag);
                     Console.WriteLine("Path:        {0}", path);
                     Console.WriteLine("Announce urls: ");
-                    foreach (string url in announceUrl.ToArray())
+                    foreach (string url in announceUrls.ToArray())
                     {
                         Console.WriteLine("- Url:         {0}", url);
                     }
                 }
 
-                //TODO PROCCESSING HERE
+
+                //beginnen maar
+                Metafile metafile = new Metafile(path, null, true, true, "", "", 1, 2.0, appName + " " + version);
+
             }
             catch (FatalException e)
             {

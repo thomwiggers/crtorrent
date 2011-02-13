@@ -50,5 +50,15 @@ namespace crtorrent
             }
             return returnList.ToArray();
         }
+
+        public FileInfo[] getFiles()
+        {
+            return RootDirectory.GetFiles();
+        }
+
+        public FileInfo[] getAllFiles()
+        {
+            return RootDirectory.GetFiles("*", SearchOption.AllDirectories);
+        }
     }
 }

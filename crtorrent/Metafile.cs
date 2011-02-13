@@ -2,18 +2,39 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using crtorrent.Bencode;
 namespace crtorrent
 {
 
-    class MetafileCreator
+    class Metafile
     {
+        private List<FileInfo> files = new List<FileInfo>();
+        private DirectoryBrowser mainDirectory;
 
-        public MetafileCreator(string path, string[] announceUrls, bool privateFlag,
-            bool setDateFlag, string comment, string outputFilename, int threads, double pieceLenght)
+        private BencodeDictionary metafile;
+
+        public Metafile(string path, string[] announceUrls, bool privateFlag,
+            bool setDateFlag, string comment, string outputFilename, int threads, double pieceLenght, string creator)
         {
+            metafile.Add("info", new BencodeDictionary());
+            if (setDateFlag)
+            {
+                TimeSpan t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
+                int timestamp = (int)t.TotalSeconds;
+                metafile.Add("creation date", timestamp);
+            }
+            if(comment != string.Empty)
+            {
+                metafile.Add("comment", comment);
+            }
+            metafile.Add("created by", creator);
+            metafile.Add("announce", announceUrls[1]);
+            if(announceUrls.Length > 1)
+            {
+                metafile.Add("announce-list", announceUrls);
+            }
             try
             {
-                
                 string targetType = "NOTFOUND";
                 if (File.Exists(path))
                 {
@@ -29,13 +50,11 @@ namespace crtorrent
                 }
                 if (targetType == "DIR")
                 {
-                    DirectoryInfo dirInfo = new DirectoryInfo(path);
-                    string rootDir = dirInfo.ToString();
-                    Console.WriteLine("-------Directory Listing:-----------");
-                    foreach (string dir in getDirectoryContents(dirInfo).ToArray())
-                    {
-                        Console.WriteLine(dir);
-                    }
+                    mainDirectory = new DirectoryBrowser(path);
+                    files.Union(mainDirectory.getAllFiles());
+
+
+
                 }
             }
             catch (DirectoryNotFoundException e)

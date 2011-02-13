@@ -63,10 +63,11 @@
     <Compile Include="Bencode\BencodeList.cs" />
     <Compile Include="Bencode\BencodeDictionary.cs" />
     <Compile Include="Bencode\IBencodeItem.cs" />
+    <Compile Include="Hasher.cs" />
     <Compile Include="DirectoryBrowser.cs" />
     <Compile Include="FatalException.cs" />
     <Compile Include="InvalidArgumentException.cs" />
-    <Compile Include="MetafileCreator.cs" />
+    <Compile Include="Metafile.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
