@@ -11,13 +11,30 @@ namespace crtorrent
     {
         int threadCount;
         double pieceLenght;
+        int numPiece;
+        int totalPieces;
+        long totalByteSize;
         List<string> hashes = new List<string>();
-
+        List<string> files = new List<string>();
+        BufferedStream bufferFile;
+        BufferedStream BufferFile
+        {
+            get
+            {
+                lock (this)
+                {
+                    if (bufferFile == null)
+                    {
+                        BufferNextFile();
+                    }
+                    return bufferFile;
+                }
+            }
+        }
         Hasher(double pieceLength, int threads = 1)
         {
             threadCount = threads;
             this.pieceLenght = pieceLength;
-            
         }
 /*      BufferedStream getStream()
         {
@@ -31,38 +48,74 @@ namespace crtorrent
             }
             return currentOpenFile;
         }
-
-        byte[] GetNextBlock(double offset)
-        {
-        }
 */
-        void HashFile(string path)
+        void BufferNextFile()
         {
-            using (FileStream fin = File.OpenRead(path))
+            files.RemoveAt(0);
+            bufferFile = new BufferedStream(File.OpenRead(files[0]));
+        }
+        void Initialize()
+        {
+            bufferFile = new BufferedStream(File.OpenRead(files[0]));
+        }
+        byte[] GetNextPiece()
+        {
+            int currentPiece;
+            lock (this)
             {
-                byte[] buffer = new byte[(int)pieceLenght];
-                int pieceNum = 0;
-                long remaining = fin.Length;
-                int done = 0;
-                int offset = 0;
-                while (remaining > 0)
+                currentPiece = numPiece;
+                ++numPiece;
+                //TODO FIND A WAY TO COPY SHIT
+            }
+            
+            double remaining = stream.Length - currentPiece * pieceLenght;
+            int bufferSize = (int)pieceLenght;
+            byte[] buffer = new byte[bufferSize];
+            int done = 0;
+            int offset = 0;
+            while (remaining > 0)
+            {
+                while (done < pieceLenght)
                 {
-                    while (done < pieceLenght)
+                    int read = BufferFile.Read(buffer, offset, (int)pieceLenght);
+
+                    //if read == 0, EOF reached
+                    if (read == 0)
                     {
-                        int read = fin.Read(buffer, offset, (int)pieceLenght);
-
-                        //if read == 0, EOF reached
-                        if (read == 0)
+                        bufferFile = null;
+                        if (files.Count == 0)
+                        {
                             break;
-
-                        offset += read;
-                        remaining -= read;
+                        }
+                        
+                        offset = 0;
                     }
-                    HashPiece(buffer, pieceNum);
-                    done = 0;
-                    pieceNum++;
-                    buffer = new byte[(int)pieceLenght];
+
+                    offset += read;
+                    remaining -= read;
                 }
+
+            }
+            return buffer;
+
+        }
+        void addFile(string path)
+        {
+            files.Add(path);
+            totalByteSize += File.OpenRead(path).Length;
+        }
+        //call before starting to hash
+        void Initialize()
+        {
+            totalPieces = (int)Math.Ceiling(totalByteSize / pieceLenght);
+        }
+        void HashFiles()
+        {
+            
+            while (numPiece < totalPieces)
+            {
+                int piece = numPiece;
+                HashPiece(GetNextPiece(), piece);
             }
         }
 
