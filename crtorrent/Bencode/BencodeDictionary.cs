@@ -72,15 +72,16 @@ namespace crtorrent.Bencode
         {
             Add(key, new BencodeInt(value));
         }
-        public void Add(string key, params string[] list)
+
+        public void AddList(string key, params string[] list)
         {
             Add(key, new BencodeList(list));
         }
-        public void Add(string key, params int[] list)
+        public void AddList(string key, params int[] list)
         {
             Add(key, new BencodeList(list));
         }
-        public void Add(string key, params IBencodeItem[] list)
+        public void AddList(string key, params IBencodeItem[] list)
         {
             Add(key, new BencodeList(list));
         }

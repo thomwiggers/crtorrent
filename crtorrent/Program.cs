@@ -27,7 +27,7 @@ namespace crtorrent
     class Program
     {
         public const string appName = "crtorrent";
-        public const string version = "0.1a  " + Environment.OSVersion.Platform;
+        public const string version = "0.1a";
         public const string fullVersionInformation = "Alpha build, does not do anything yet.";
         const string HELP = "help";
         const string COPYRIGHT = "copyright";
@@ -153,6 +153,13 @@ namespace crtorrent
 
                 }
 
+                if (args.Length < 2)
+                {
+                     throw new FatalException("Not enough parameters");
+                }
+
+
+
                 //check if before last parameter doesn't take a value
                 string beforeLastArg = args[args.Length - 2].TrimStart('-');
                 switch (beforeLastArg)
@@ -175,10 +182,9 @@ namespace crtorrent
                         throw new FatalException("Error: No directory specified");
                 }
 
-                path = args[args.Length - 1];
-                
+                           
                 //validatie:
-                if (announceUrls.Count == 0)
+                if (announceUrls.Count < 1)
                 {
                     throw new FatalException("No announce url specified");
                 }
@@ -200,7 +206,8 @@ namespace crtorrent
 
 
                 //beginnen maar
-                Metafile metafile = new Metafile(path, null, true, true, "", "", 1, 2.0, appName + " " + version);
+                //TODO
+                Metafile metafile = new Metafile("test.exe", announceUrls.ToArray(), privateFlag, dateFlag, comment, outputFile, numThreads, Math.Pow(2,18), appName + " " + version);
 
             }
             catch (FatalException e)
@@ -215,7 +222,7 @@ namespace crtorrent
                 {
                     Console.WriteLine(e.StackTrace);
                 }
-                Console.WriteLine("\r\n Type {0} --help for help about this program", Environment.GetCommandLineArgs()[0]);
+                Console.WriteLine("\r\n Type {0} --help for help about this program", Path.GetFileName(Environment.GetCommandLineArgs()[0]));
             }
         }
 

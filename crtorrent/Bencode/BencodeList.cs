@@ -30,13 +30,6 @@ namespace crtorrent.Bencode
         {
 
         }
-        public BencodeList(params IBencodeItem[] list)
-        {
-            foreach (IBencodeItem item in list)
-            {
-                Add(item);
-            }
-        }
         public BencodeList(params int[] list)
         {
             foreach (int item in list)
@@ -51,6 +44,13 @@ namespace crtorrent.Bencode
                 Add(item);
             }
         }
+        public BencodeList(IBencodeItem[] list)
+        {
+            foreach (IBencodeItem item in list)
+            {
+                Add(item);
+            }
+        }
         public void Add(string item)
         {
             Add(new BencodeString(item));
@@ -59,7 +59,6 @@ namespace crtorrent.Bencode
         {
             Add(new BencodeInt(item));
         }
-
         public override string ToString()
         {
             string returnString = "";

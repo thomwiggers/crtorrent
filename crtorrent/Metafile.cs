@@ -10,13 +10,16 @@ namespace crtorrent
     {
         private List<FileInfo> files = new List<FileInfo>();
         private DirectoryBrowser mainDirectory;
-
         private BencodeDictionary metafile;
+        private Hasher hasher;
 
         public Metafile(string path, string[] announceUrls, bool privateFlag,
             bool setDateFlag, string comment, string outputFilename, int threads, double pieceLenght, string creator)
         {
-            metafile.Add("info", new BencodeDictionary());
+            hasher = new Hasher(pieceLenght, threads);
+            metafile = new BencodeDictionary();
+            BencodeDictionary infoDict = new BencodeDictionary();
+            metafile.Add("info", infoDict);
             if (setDateFlag)
             {
                 TimeSpan t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
@@ -28,11 +31,13 @@ namespace crtorrent
                 metafile.Add("comment", comment);
             }
             metafile.Add("created by", creator);
-            metafile.Add("announce", announceUrls[1]);
+            metafile.Add("announce", announceUrls[0]);
+            
             if(announceUrls.Length > 1)
             {
-                metafile.Add("announce-list", announceUrls);
+                metafile.AddList("announce-list", announceUrls);
             }
+            
             try
             {
                 string targetType = "NOTFOUND";
@@ -52,8 +57,10 @@ namespace crtorrent
                 {
                     mainDirectory = new DirectoryBrowser(path);
                     files.Union(mainDirectory.getAllFiles());
-
-
+                }
+                if (targetType == "FILE")
+                {
+                    hasher.HashFile(path);
 
                 }
             }
