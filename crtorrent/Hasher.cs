@@ -60,7 +60,7 @@ namespace crtorrent
         {
             for (fileIndex = 0; fileIndex < threadCount && fileIndex < files.Count; fileIndex++)
             {
-                streams.Add(new BufferedStream(File.OpenRead(files[i]), 10 * (int)pieceLength));
+			    streams.Add(new BufferedStream(File.OpenRead(files[i]), 10 * (int)pieceLength));
             }
             totalPieces = (int)Math.Ceiling(totalByteSize / pieceLength);
         }
