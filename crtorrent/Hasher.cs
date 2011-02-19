@@ -1,147 +1,159 @@
-﻿using System;
+/**
+ * crtorrent
+ * 
+ * Hashing helper
+ * 
+    crtorrent creates torrent metainfo files from directories and files.
+    Copyright (C) 2011  Thom Wiggers
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
-using System.Text;
 using System.IO;
-using System.Security.Cryptography;
+using System.Threading.Tasks;
 using System.Threading;
-namespace crtorrent
+
+namespace crtorrent 
 {
-    class Hasher
-    {
-        int threadCount;
-        double pieceLength;
-        int numPiece;
-        int totalPieces;
-        long totalByteSize;
-        List<string> hashes = new List<string>();
-        List<string> files = new List<string>();
-        int fileIndex = 0;
-        List<BufferedStream> streams = new List<BufferedStream>();
-        BufferedStream bufferFile;
-        BufferedStream BufferFile
+	class Hasher
+	{
+        private int bufferSize = 16777216;
+        private CancellationTokenSource cancelToken;
+		//Number of threads
+		private int numThreads;
+		//piecelength
+		private int pieceLength;
+		// Files with information
+		// Layout:
+		//    num -> (path->hash)
+		private List<string> files = new List<string>();
+		public List<string> Files
+		{
+			get
+			{
+				return files;
+			}
+		}
+        private ConcurrentDictionary<string,List<byte>> hashes = new ConcurrentDictionary<string,List<byte>>();
+        public ConcurrentDictionary<string,List<byte>> Hashes
         {
             get
             {
-                lock (this)
-                {
-                    if (bufferFile == null)
-                    {
-                        BufferNextFile();
-                    }
-                    return bufferFile;
-                }
+                return hashes;
             }
         }
-        Hasher(double pieceLength, int threads = 1)
+        private ConcurrentDictionary<string,List<string>> md5Sums = new ConcurrentDictionary<string,List<byte>>();
+        public ConcurrentDictionary<string,List<string>> Md5Sums
         {
-            threadCount = threads;
-            this.pieceLength = pieceLength;
-        }
-/*      BufferedStream getStream()
-        {
-            if (currentOpenFile == null)
+            get
             {
-                if (files[nextFileIndex].Length < pieceLenght * 20)
+                return md5Sums;
+            }
+        }
+		
+		// Initializing with certain values
+		public Hasher(CancellationTokenSource cancellationTokenSource, int threads, double usePieceLenght)
+		{
+            cancelToken = cancellationTokenSource;
+			numThreads = threads;
+			pieceLength = (int)usePiecelength;
+		}
+		public Hasher(CancellationTokenSource cancellationTokenSource, int threads, int usePieceLenght)
+		{
+            cancelToken = cancellationTokenSource;
+			numThreads = threads;
+			pieceLength = usePiecelength;
+		}
+		
+		//initialising with defaults
+		public Hasher(CancellationTokenSource cancellationTokenSource)
+		{
+            cancelToken = cancellationTokenSource;
+			numThreads = 1;
+			pieceLength = Math.pow(2,18);
+		}
+		
+		//Add a file (duh)
+		public void AddFile(string path)
+		{
+			files.Add(path);
+		}
+		
+		public void DoHashing()
+		{
+            ParallelOptions options = new ParallelOptions();
+            options.MaxDegreeOfParallelism = numThreads;
+            options.CancellationToken = cancelToken;
+            Parallel.ForEach(files, options, (string f, ParallelLoopState loopState) =>
                 {
-                    currentOpenFile = new BufferedStream(files[nextFileIndex], (int)files[nextFileIndex].Length);
-                    nextFileIndex++;
-                }
-            }
-            return currentOpenFile;
-        }
-*/
-        void BufferNextFile()
-        {
-            files.RemoveAt(0);
-            bufferFile = new BufferedStream(File.OpenRead(files[0]));
-        }
-        void Initialize()
-        {
-            for (fileIndex = 0; fileIndex < threadCount && fileIndex < files.Count; fileIndex++)
-            {
-			    streams.Add(new BufferedStream(File.OpenRead(files[i]), 10 * (int)pieceLength));
-            }
-            totalPieces = (int)Math.Ceiling(totalByteSize / pieceLength);
-        }
-        BufferedStream GetStream(int stream)
-        {
-            return streams[stream];
-        }
+                    options.CancellationToken.ThrowIfCancellationRequested();
 
-        byte[] GetNextPiece()
-        {
-            int currentPiece;
-            lock (this)
-            {
-                currentPiece = numPiece;
-                ++numPiece;   
-            }
-            
-            double remaining = GetStream(0).Length - currentPiece * pieceLength;
-            int bufferSize = (int)pieceLength;
-            byte[] buffer = new byte[bufferSize];
-            int done = 0;
-            while (remaining > 0)
-            {
-                while (done < pieceLength)
-                {
-                    int toRead = (int)Math.Min(pieceLength, remaining);
-                    int read = BufferFile.Read(buffer, done, toRead);
-
-                    //if read == 0, EOF reached
-                    if (read == 0)
+                    using (BufferedStream fileStream = new BufferedStream(File.OpenRead(f), bufferSize))
                     {
-                        bufferFile = null;
-                        if (files.Count == 0)
+
+                        // Get the MD5sum first:
+                        using (MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider())
                         {
-                            remaining = 0;
-                            break;
+                            md5.Initialize();
+                            md5Sums[f] = BitConverter.ToString(md5.ComputeHash(fin)).Replace("-", "");
                         }
-                        
+
+                        //setup for reading:
+                        byte[] buffer = new byte[(int)pieceLength];
+                        int pieceNum = 0;
+                        long remaining = FileI;
+                        int done = 0;
+                        int offset = 0;
+                        while (remaining > 0)
+                        {
+                            while (done < pieceLength)
+                            {
+                                //either try to read the piecelength, or the remaining length of the file.
+                                int toRead = (int)Math.Min(pieceLenght - done, remaining);
+                                int read = fin.Read(buffer, done, toRead);
+
+                                //if read == 0, EOF reached
+                                if (read == 0)
+                                {
+                                    remaining = 0;
+                                    break;
+                                }
+
+                                //offsets
+                                done += read;
+                                remaining -= read;
+                            }
+                            // Hash the piece
+                            using (SHA1CryptoServiceProvider sha1 = new SHA1CryptoServiceProvider())
+                            {
+                                sha1.Initialize();
+                                byte[] hash = sha1.ComputeHash(buffer);
+                                hashes[f].AddRange(hash);
+                            }
+
+                            done = 0;
+                            pieceNum++;
+                            buffer = new byte[(int)pieceLength];
+                        }
                     }
-                    done += read;
-                    remaining -= read;
                 }
-                done = 0;    
-            }
-                    
-            return buffer;
+            );
+            
 
         }
-        void addFile(string path)
-        {
-            files.Add(path);
-            totalByteSize += File.OpenRead(path).Length;
-        }
-
-        void HashFiles()
-        {
-            while (numPiece < totalPieces)
-            {
-                int piece = numPiece;
-                HashPiece(GetNextPiece(), piece);
-            }
-        }
-
-        string getFileMD5(string path)
-        {
-            using (FileStream fin = File.OpenRead(path))
-            {
-                MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider();
-                md5.Initialize();
-                return BitConverter.ToString(md5.ComputeHash(fin));   
-            }
-        }
-
-        void HashPiece(byte[] piece, int pieceNum)
-        {
-            using (SHA1CryptoServiceProvider sha1 = new SHA1CryptoServiceProvider())
-            {
-                sha1.Initialize();
-                byte[] hash = sha1.ComputeHash(piece);
-                hashes[pieceNum] = UTF8Encoding.UTF8.GetString(hash);
-            }
-        }
-    }
+	}
 }
