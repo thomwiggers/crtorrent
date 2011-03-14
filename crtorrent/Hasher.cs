@@ -33,10 +33,12 @@ namespace crtorrent
 	{
         private int bufferSize = 16777216;
         private CancellationTokenSource cancelToken;
+		
 		//Number of threads
 		private int numThreads;
 		//piecelength
 		private int pieceLength;
+		
 		// Files with information
 		// Layout:
 		//    num -> (path->hash)
@@ -93,67 +95,7 @@ namespace crtorrent
 			files.Add(path);
 		}
 		
-		public void DoHashing()
-		{
-            ParallelOptions options = new ParallelOptions();
-            options.MaxDegreeOfParallelism = numThreads;
-            options.CancellationToken = cancelToken;
-            Parallel.ForEach(files, options, (string f, ParallelLoopState loopState) =>
-                {
-                    options.CancellationToken.ThrowIfCancellationRequested();
-
-                    using (BufferedStream fileStream = new BufferedStream(File.OpenRead(f), bufferSize))
-                    {
-
-                        // Get the MD5sum first:
-                        using (MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider())
-                        {
-                            md5.Initialize();
-                            md5Sums[f] = BitConverter.ToString(md5.ComputeHash(fin)).Replace("-", "");
-                        }
-
-                        //setup for reading:
-                        byte[] buffer = new byte[(int)pieceLength];
-                        int pieceNum = 0;
-                        long remaining = FileI;
-                        int done = 0;
-                        int offset = 0;
-                        while (remaining > 0)
-                        {
-                            while (done < pieceLength)
-                            {
-                                //either try to read the piecelength, or the remaining length of the file.
-                                int toRead = (int)Math.Min(pieceLenght - done, remaining);
-                                int read = fin.Read(buffer, done, toRead);
-
-                                //if read == 0, EOF reached
-                                if (read == 0)
-                                {
-                                    remaining = 0;
-                                    break;
-                                }
-
-                                //offsets
-                                done += read;
-                                remaining -= read;
-                            }
-                            // Hash the piece
-                            using (SHA1CryptoServiceProvider sha1 = new SHA1CryptoServiceProvider())
-                            {
-                                sha1.Initialize();
-                                byte[] hash = sha1.ComputeHash(buffer);
-                                hashes[f].AddRange(hash);
-                            }
-
-                            done = 0;
-                            pieceNum++;
-                            buffer = new byte[(int)pieceLength];
-                        }
-                    }
-                }
-            );
-            
-
-        }
+		
+		
 	}
 }
