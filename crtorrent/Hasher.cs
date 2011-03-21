@@ -39,9 +39,7 @@ namespace crtorrent
 		//piecelength
 		private int pieceLength;
 		
-		// Files with information
-		// Layout:
-		//    num -> (path->hash)
+		// File paths
 		private List<string> files = new List<string>();
 		public List<string> Files
 		{
@@ -51,23 +49,15 @@ namespace crtorrent
 			}
 		}
         private ConcurrentDictionary<string,List<byte>> hashes = new ConcurrentDictionary<string,List<byte>>();
-        public ConcurrentDictionary<string,List<byte>> Hashes
-        {
-            get
-            {
-                return hashes;
-            }
-        }
-        private ConcurrentDictionary<string,List<string>> md5Sums = new ConcurrentDictionary<string,List<byte>>();
-        public ConcurrentDictionary<string,List<string>> Md5Sums
-        {
-            get
-            {
-                return md5Sums;
-            }
-        }
+
+		///
+		/// Chunks, in a list
+		///
+		private List<Chunk> Chunks = new List<Chunk>();
 		
-		// Initializing with certain values
+		///
+		/// Initializing with certain values
+		///
 		public Hasher(CancellationTokenSource cancellationTokenSource, int threads, double usePieceLenght)
 		{
             cancelToken = cancellationTokenSource;
@@ -81,7 +71,9 @@ namespace crtorrent
 			pieceLength = usePiecelength;
 		}
 		
-		//initialising with defaults
+		///
+		/// Initialising with defaults
+		///
 		public Hasher(CancellationTokenSource cancellationTokenSource)
 		{
             cancelToken = cancellationTokenSource;
@@ -89,13 +81,160 @@ namespace crtorrent
 			pieceLength = Math.pow(2,18);
 		}
 		
-		//Add a file (duh)
+		///
+		/// Add a file (duh)
+		///
 		public void AddFile(string path)
 		{
 			files.Add(path);
 		}
 		
+		///
+		/// Prepare for hashing
+		///
+		private void ChunkFiles(string[] filenames)
+		{
+			string[] filenames = Files.ToArray();
+			Chunk currentChunk = null;
+			int offset = 0;
+
+			foreach (string filename in filenames)
+			{
+				FileInfo fi = new FileInfo(filename);
+				if (!fi.Exists)
+					throw new FileNotFoundException(filename);
+
+				Debug.WriteLine(String.Format("File: {0}", filename));
+				//
+				// First, start off by either starting a new chunk or 
+				// by finishing a leftover chunk from a previous file.
+				//
+				if (currentChunk != null)
+				{
+					//
+					// We get here if the previous file had leftover bytes that left us with an incomplete chunk
+					//
+					int needed = pieceLength - currentChunk.Length;
+					if (needed == 0)
+						throw new InvalidOperationException("Something went wonky, shouldn't be here");
+
+					offset = needed;
+					currentChunk.Sources.Add(new ChunkSource()
+					{
+						Filename = fi.FullName,
+						StartPosition = 0,
+						Length = (int)Math.Min(fi.Length, (long)needed)
+					});
+
+					if (currentChunk.Length >= pieceLength)
+					{
+						chunks.Add(currentChunk = new Chunk());
+					}
+				}
+
+				//
+				// Note: Using integer division here
+				//
+				for (int i = 0; i < (fi.Length - offset) / pieceLength; i++)
+				{
+					chunks.Add(currentChunk = new Chunk());
+					currentChunk.Sources.Add(new ChunkSource()
+					{
+						Filename = fi.FullName,
+						StartPosition = i * pieceLength + offset,
+						Length = pieceLength
+					});
+
+					Debug.WriteLine(String.Format("Chunk source created: Offset = {0,10}, Length = {1,10}", currentChunk.Sources[0].StartPosition, currentChunk.Sources[0].Length));
+				}
+
+				int leftover = (int)(fi.Length - offset) % pieceLength;
+				if (leftover > 0)
+				{
+					chunks.Add(currentChunk = new Chunk());
+					currentChunk.Sources.Add(new ChunkSource()
+					{
+						Filename = fi.FullName,
+						StartPosition = (int)(fi.Length - leftover),
+						Length = leftover
+					});
+				}
+				else
+				{
+					currentChunk = null;
+					offset = 0;
+				}
+
+			}
+		}
 		
-		
+		///
+		/// Calculate Hashes
+		///
+	    private void ComputeHashes()
+		{
+			if (chunks == null || chunks.Count == 0)
+				return;
+
+			Dictionary<string, MemoryMappedFile> files = new Dictionary<string, MemoryMappedFile>();
+
+			foreach (var chunk in chunks)
+			{
+				MemoryMappedFile mms = null;
+				byte[] buffer = new byte[pieceLength];
+				ConcurrentDictionary<string, MemoryMappedFile> files = new ConcurrentDictionary<string, MemoryMappedFile>();
+				Parallel.ForEach(chunks, new ParallelOptions() { MaxDegreeOfParallelism = 2 }, (chunk, state, index) =>
+				{
+					MemoryMappedFile mms = null;
+					byte[] buffer = new byte[pieceLength];
+
+					foreach (var source in chunk.Sources)
+					{
+						if (!files.TryGetValue(source.Filename, out mms)) {
+							{
+								Debug.WriteLine(String.Format("Opening {0}", source.Filename));
+								files.Add(source.Filename, mms = MemoryMappedFile.CreateFromFile(source.Filename, FileMode.Open));
+							}
+						}
+
+						var view = mms.CreateViewStream(source.StartPosition, source.Length);
+						view.Read(buffer, 0, source.Length);
+					}
+
+					Debug.WriteLine("Done reading sources");
+					using (SHA1CryptoServiceProvider sha1 = new SHA1CryptoServiceProvider())
+					{
+						sha1.Initialize();
+						chunk.Hash = sha1.ComputeHash(buffer);
+					}
+					Debug.WriteLine(String.Format("Computed hash: {0}", String.Join("-", chunk.Hash.Select(h => h.ToString("X2")).ToArray())));
+				});
+			}
+
+			foreach (var f in files.Values)
+			{
+				f.Dispose();
+			}
+		}
+
+		///
+		/// Get all hashes as byte[] 
+		///
+		public byte[] GetHashes()
+		{
+			if (chunks == null || chunks.Count == 0)
+				return;
+			
+			long hashLength = chunks.Count * pieceLength;
+			
+			List<byte> hash = new List<byte>();
+			
+			foreach (Chunk chunk in chunks)
+			{
+				hash.AddRange(chunk.Hash);
+			}
+			
+			return hash.ToArray();
+		}
 	}
 }
