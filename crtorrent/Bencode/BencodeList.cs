@@ -66,7 +66,7 @@ namespace crtorrent.Bencode
         {
             Add(new BencodeInt(item));
         }
-        internal override string ToString()
+        public override string ToString()
         {
             string returnString = "";
             if (this.Count > 0)
@@ -79,6 +79,24 @@ namespace crtorrent.Bencode
                 returnString += "e";
             }
             return returnString;
+        }
+
+        public byte[] ToBytes()
+        {
+            if (this.Count > 0)
+            {
+                List<byte> blist = new List<byte>();
+                blist.AddRange(System.Text.Encoding.UTF8.GetBytes("l"));
+                foreach (IBencodeItem item in this)
+                {
+                    byte[] value = item.ToBytes();
+                    if(value != null)
+                        blist.AddRange(value);
+                }
+                blist.AddRange(System.Text.Encoding.UTF8.GetBytes("e"));
+                return blist.ToArray();
+            }
+            else return null;
         }
     }
 }

@@ -24,5 +24,6 @@ namespace crtorrent.Bencode
     internal interface IBencodeItem
     {
         string ToString();
+        byte[] ToBytes();
     }
 }

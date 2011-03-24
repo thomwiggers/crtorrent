@@ -53,7 +53,7 @@ namespace crtorrent.Bencode
             this.Value = value;
         }
 
-        internal override string ToString()
+        public override string ToString()
         {
             if (this.set)
             {
@@ -62,5 +62,9 @@ namespace crtorrent.Bencode
             return "";
         }
 
+        public byte[] ToBytes()
+        {
+            return System.Text.Encoding.UTF8.GetBytes(ToString());
+        }
     }
 }

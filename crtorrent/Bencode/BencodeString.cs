@@ -19,6 +19,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using System;
+using System.Text;
+using System.Linq;
+using System.Collections.Generic;
 namespace crtorrent.Bencode
 {
     internal class BencodeString : IBencodeItem
@@ -28,7 +32,11 @@ namespace crtorrent.Bencode
             set;
             get;
         }
-
+        internal byte[] ByteValue
+        {
+            set;
+            get;
+        }
         internal BencodeString()
         {
 
@@ -37,8 +45,12 @@ namespace crtorrent.Bencode
         {
             this.Value = value;
         }
+        internal BencodeString(byte[] value)
+        {
+            this.ByteValue = value;
+        }
 
-        internal override string ToString()
+        public override string ToString()
         {
             if (Value != null)
             {
@@ -47,6 +59,20 @@ namespace crtorrent.Bencode
             return "";
         }
 
+        public byte[] ToBytes()
+        {
+            if (ByteValue == null)
+            {
+                return Encoding.UTF8.GetBytes(ToString());
+            }
+            else
+            {
+                List<byte> blist = new List<byte>();
+                blist.AddRange(Encoding.UTF8.GetBytes(String.Format("{0}:", ByteValue.Length)));
+                blist.AddRange(ByteValue);
+                return blist.ToArray();
+            }
+        }
 
     }
 }

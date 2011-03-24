@@ -186,15 +186,21 @@ namespace crtorrent
                     case "private":
                     case "name":
                     case "n":
-                        throw new FatalException("Error: No directory specified");
+                        throw new FatalException("Error: No target specified");
                 }
 
+                path = args[args.Length - 1];
                            
                 //validatie:
                 if (announceUrls.Count < 1)
                 {
                     throw new FatalException("No announce url specified");
                 }
+                if (outputFile == null)
+                    outputFile = String.Format("{0}.torrent", Path.GetFileNameWithoutExtension(path));
+
+                if (File.Exists(outputFile))
+                    throw new FatalException(String.Format("{0} already exists", outputFile));
                 if (verboseFlag)
                 {
                     Console.WriteLine("################# DETAILS ########################");
@@ -203,18 +209,22 @@ namespace crtorrent
                     Console.WriteLine("NumThreads:    {0}", numThreads);
                     Console.WriteLine("Output file:   {0}", outputFile);
                     Console.WriteLine("Private:       {0}", privateFlag);
-                    Console.WriteLine("Path:        {0}", path);
+                    Console.WriteLine("Path:          {0}", path);
                     Console.WriteLine("Announce urls: ");
                     foreach (string url in announceUrls)
                     {
-                        Console.WriteLine("- Url:         {0}", url);
+                        Console.WriteLine("  Url:         {0}", url);
                     }
                 }
 
 
+
                 //beginnen maar
-                //TODO
-                Metafile metafile = new Metafile("test.exe", announceUrls.ToArray(), privateFlag, dateFlag, comment, outputFile, numThreads, Math.Pow(2,18), appName + " " + version, cancelToken);
+                Metafile metafile = new Metafile(path, announceUrls.ToArray(), privateFlag, dateFlag, comment, outputFile, numThreads, Math.Pow(2,18), appName + " " + version, cancelToken);
+
+                FileStream fout = File.Open(outputFile, FileMode.CreateNew);
+                byte[] mfile =  metafile.metafile.ToBytes();
+                fout.Write(mfile, 0, mfile.Length);
 
             }
             catch (FatalException e)

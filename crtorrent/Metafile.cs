@@ -7,14 +7,14 @@ using crtorrent.Bencode;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
+using System.Diagnostics;
 namespace crtorrent
 {
 
     class Metafile
     {
         private List<FileInfo> files = new List<FileInfo>();
-        private DirectoryBrowser mainDirectory;
-        private BencodeDictionary metafile;
+        internal BencodeDictionary metafile;
         private Hasher hasher;
 
         internal Metafile(string path, string[] announceUrls, bool privateFlag,
@@ -40,7 +40,7 @@ namespace crtorrent
             }
             metafile.Add("created by", creator);
             metafile.Add("announce", announceUrls[0]);
-            metafile.Add("encoding", Encoding.UTF8.WebName);
+            //metafile.Add("encoding", Encoding.UTF8.WebName);
             if(announceUrls.Length > 1)
             {
                 metafile.AddList("announce-list", announceUrls);
@@ -103,15 +103,18 @@ namespace crtorrent
                         using (MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider())
                         {
                             md5.Initialize();
-                            byte[] hash = md5.ComputeHash(File.OpenRead(path));
+                            FileStream f = File.OpenRead(path);
+                            byte[] hash = md5.ComputeHash(f);
                             StringBuilder sb = new StringBuilder();
                             foreach (byte h in hash)
                             {
                                 sb.Append(h.ToString("X2"));
                             }
                             filesDictionary.Add("md5sum", sb.ToString());
+                            f.Dispose();
                         }
                     });
+                    hasher.ChunkFiles();
 
                 }
                 if (targetType == "FILE")
@@ -119,19 +122,21 @@ namespace crtorrent
                     FileInfo fi = new FileInfo(path);
                     files.Add(fi);
                     hasher.AddFile(path);
-                    Task t = Task.Factory.StartNew(hasher.ComputeHashes);
+                    Task t = Task.Factory.StartNew(hasher.ChunkFiles);
                     infoDict.Add("name", fi.Name);
                     infoDict.Add("length", fi.Length);
                     using (MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider())
                     {
                         md5.Initialize();
-                        byte[] hash = md5.ComputeHash(File.OpenRead(path));
+                        FileStream f = File.OpenRead(path);
+                        byte[] hash = md5.ComputeHash(f);
                         StringBuilder sb = new StringBuilder();
                         foreach (byte h in hash)
                         {
                             sb.Append(h.ToString("X2"));
                         }
                         infoDict.Add("md5sum", sb.ToString());
+                        f.Dispose();
                     }
 
                     t.Wait();
@@ -139,10 +144,13 @@ namespace crtorrent
 
                 // hashen
                 hasher.ComputeHashes();
-                infoDict.Add("pieces", Encoding.UTF8.GetString(hasher.GetHashes()));
+                infoDict.Add("pieces", hasher.GetHashes());
 
                 //afronden
                 metafile.Add("info", infoDict);
+
+                Debug.WriteLine("Bencode Dictionary: \n\n" + metafile.ToString());
+
             }
             catch (DirectoryNotFoundException e)
             {
@@ -156,20 +164,6 @@ namespace crtorrent
             {
                 throw new FatalException(e);
             }
-        }
-
-        private IList<string> getDirectoryContents(DirectoryInfo dir)
-        {
-            IList<string> list = new List<string>();
-            foreach (DirectoryInfo subdir in dir.GetDirectories())
-            {
-                list.Add(subdir.ToString());
-                foreach (string subsubdirs in getDirectoryContents(subdir).ToArray())
-                {
-                    Console.WriteLine(subsubdirs);
-                }
-            }
-            return list;
         }
     }
 

@@ -195,6 +195,9 @@ namespace crtorrent
             {
                 MemoryMappedFile mms = null;
                 byte[] buffer = new byte[pieceLength];
+                if (chunk.Length < pieceLength)
+                    buffer = new byte[chunk.Length];
+               
 
                 foreach (var source in chunk.Sources)
                 {
@@ -203,7 +206,7 @@ namespace crtorrent
                         if (!files.TryGetValue(source.Filename, out mms))
                         {
                             Debug.WriteLine(String.Format("Opening {0}", source.Filename));
-                            files.Add(source.Filename, mms = MemoryMappedFile.CreateFromFile(source.Filename, FileMode.Open));
+                            files.Add(source.Filename, mms = MemoryMappedFile.CreateFromFile(source.Filename,FileMode.Open));
                         }
                     }
 
@@ -215,6 +218,7 @@ namespace crtorrent
 
                 using (SHA1CryptoServiceProvider sha1 = new SHA1CryptoServiceProvider())
                 {
+
                     sha1.Initialize();
                     chunk.Hash = sha1.ComputeHash(buffer);
                 }
