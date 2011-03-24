@@ -2,7 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Text;
 using crtorrent.Bencode;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Security.Cryptography;
 namespace crtorrent
 {
 
@@ -13,13 +17,17 @@ namespace crtorrent
         private BencodeDictionary metafile;
         private Hasher hasher;
 
-        public Metafile(string path, string[] announceUrls, bool privateFlag,
-            bool setDateFlag, string comment, string outputFilename, int threads, double pieceLenght, string creator)
+        internal Metafile(string path, string[] announceUrls, bool privateFlag,
+            bool setDateFlag, string comment, string outputFilename, int threads, 
+            double pieceLenght, string creator, CancellationTokenSource cancelToken)
         {
-            hasher = new Hasher(pieceLenght, threads);
+            hasher = new Hasher(cancelToken, threads, pieceLenght);
             metafile = new BencodeDictionary();
+            
             BencodeDictionary infoDict = new BencodeDictionary();
-            metafile.Add("info", infoDict);
+            infoDict.Add("private", 1);
+            infoDict.Add("piece length", (long)pieceLenght);
+
             if (setDateFlag)
             {
                 TimeSpan t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
@@ -32,7 +40,7 @@ namespace crtorrent
             }
             metafile.Add("created by", creator);
             metafile.Add("announce", announceUrls[0]);
-            
+            metafile.Add("encoding", Encoding.UTF8.WebName);
             if(announceUrls.Length > 1)
             {
                 metafile.AddList("announce-list", announceUrls);
@@ -55,14 +63,86 @@ namespace crtorrent
                 }
                 if (targetType == "DIR")
                 {
-                    mainDirectory = new DirectoryBrowser(path);
-                    files.Union(mainDirectory.getAllFiles());
+                    DirectoryInfo dir = new DirectoryInfo(path);
+                    files.Union(dir.GetFiles("*", SearchOption.AllDirectories));
+                    infoDict.Add("name", dir.Name);
+                    
+                    
+                    BencodeList fileList = new BencodeList();
+                    
+                    string[] rootPathSegements = dir.Name.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+                    Parallel.ForEach(files, 
+                            new ParallelOptions() {
+                                MaxDegreeOfParallelism = threads,
+                                CancellationToken = cancelToken.Token
+                            }, 
+                            (file, state, index) =>
+                    {
+                        BencodeDictionary filesDictionary = new BencodeDictionary();
+                        string filePath = file.FullName;
+                        
+                        hasher.AddFile(filePath);
+                        filesDictionary.Add("length", file.Length);
+                        
+                        // Pad maken
+                        string[] segments = filePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                        BencodeList bencodePath = new BencodeList();
+                        for (int i = 0; i < segments.Length; i++)
+                        {
+                            if (rootPathSegements.Length > i)
+                                if (segments[i] == rootPathSegements[i])
+                                    continue;
+                            else
+                            {
+                                bencodePath.Add(segments[i]);
+                            }
+                        }
+                        filesDictionary.Add("path", bencodePath);
+
+                        using (MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider())
+                        {
+                            md5.Initialize();
+                            byte[] hash = md5.ComputeHash(File.OpenRead(path));
+                            StringBuilder sb = new StringBuilder();
+                            foreach (byte h in hash)
+                            {
+                                sb.Append(h.ToString("X2"));
+                            }
+                            filesDictionary.Add("md5sum", sb.ToString());
+                        }
+                    });
+
                 }
                 if (targetType == "FILE")
                 {
-                    hasher.HashFile(path);
+                    FileInfo fi = new FileInfo(path);
+                    files.Add(fi);
+                    hasher.AddFile(path);
+                    Task t = Task.Factory.StartNew(hasher.ComputeHashes);
+                    infoDict.Add("name", fi.Name);
+                    infoDict.Add("length", fi.Length);
+                    using (MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider())
+                    {
+                        md5.Initialize();
+                        byte[] hash = md5.ComputeHash(File.OpenRead(path));
+                        StringBuilder sb = new StringBuilder();
+                        foreach (byte h in hash)
+                        {
+                            sb.Append(h.ToString("X2"));
+                        }
+                        infoDict.Add("md5sum", sb.ToString());
+                    }
 
+                    t.Wait();
                 }
+
+                // hashen
+                hasher.ComputeHashes();
+                infoDict.Add("pieces", Encoding.UTF8.GetString(hasher.GetHashes()));
+
+                //afronden
+                metafile.Add("info", infoDict);
             }
             catch (DirectoryNotFoundException e)
             {

@@ -21,11 +21,11 @@
  */
 namespace crtorrent.Bencode
 {
-    public class BencodeInt : IBencodeItem
+    internal class BencodeInt : IBencodeItem
     {
         private bool set = false;
-        private int value;
-        public int Value
+        private long value;
+        internal long Value
         {
             set
             {
@@ -37,18 +37,23 @@ namespace crtorrent.Bencode
                 return value; 
             }
         }
-       
-        public BencodeInt()
+
+              
+        internal BencodeInt()
         {
             
         }
 
-        public BencodeInt(int value)
+        internal BencodeInt(int value)
+        {
+            this.Value = value;
+        }
+        internal BencodeInt(long value)
         {
             this.Value = value;
         }
 
-        public override string ToString()
+        internal override string ToString()
         {
             if (this.set)
             {

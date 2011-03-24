@@ -26,40 +26,47 @@ namespace crtorrent.Bencode
 
     class BencodeList : List<IBencodeItem>,IBencodeItem
     {
-        public BencodeList()
+        internal BencodeList()
         {
 
         }
-        public BencodeList(params int[] list)
+        internal BencodeList(params int[] list)
         {
             foreach (int item in list)
             {
                 Add(item); 
             }
         }
-        public BencodeList(params string[] list)
+        internal BencodeList(params long[] list)
+        {
+            foreach (int item in list)
+            {
+                Add(item);
+            }
+        }
+        internal BencodeList(params string[] list)
         {
             foreach (string item in list)
             {
                 Add(item);
             }
         }
-        public BencodeList(IBencodeItem[] list)
+        internal BencodeList(IBencodeItem[] list)
         {
             foreach (IBencodeItem item in list)
             {
                 Add(item);
             }
         }
-        public void Add(string item)
+        internal void Add(string item)
         {
             Add(new BencodeString(item));
         }
-        public void Add(int item)
+        internal void Add(int item)
         {
             Add(new BencodeInt(item));
         }
-        public override string ToString()
+        internal override string ToString()
         {
             string returnString = "";
             if (this.Count > 0)

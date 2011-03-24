@@ -22,17 +22,17 @@
  */
 namespace crtorrent
 {
-    public class InvalidArgumentException : Exception
+    internal class InvalidArgumentException : Exception
     {
-        public InvalidArgumentException()
+        internal InvalidArgumentException()
             : base()
         { 
             
         }
-        public InvalidArgumentException(string message)
+        internal InvalidArgumentException(string message)
             : base(message)
         { }
-        public InvalidArgumentException(string message, Exception innerException)
+        internal InvalidArgumentException(string message, Exception innerException)
             : base(message, innerException)
         { }
     }

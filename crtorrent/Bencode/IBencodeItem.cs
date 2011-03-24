@@ -21,7 +21,7 @@
  */
 namespace crtorrent.Bencode
 {
-    public interface IBencodeItem
+    internal interface IBencodeItem
     {
         string ToString();
     }

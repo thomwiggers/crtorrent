@@ -18,14 +18,21 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-public class Chunk
+using System;
+using System.Collections.Generic;
+using System.Linq;
+namespace crtorrent
 {
-    private List<ChunkSource> _sources = new List<ChunkSource>();
-
-    public IList<ChunkSource> Sources { get { return _sources; } }
-    public byte[] Hash { get; set; }
-    public int Length
+    
+    internal class Chunk
     {
-        get { return Sources.Select(s => s.Length).Sum(); }
+        private List<ChunkSource> _sources = new List<ChunkSource>();
+
+        internal IList<ChunkSource> Sources { get { return _sources; } }
+        internal byte[] Hash { get; set; }
+        internal int Length
+        {
+            get { return Sources.Select(s => s.Length).Sum(); }
+        }
     }
 }

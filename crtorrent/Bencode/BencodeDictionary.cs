@@ -25,32 +25,38 @@ namespace crtorrent.Bencode
 {
     class BencodeDictionary : Dictionary<string,IBencodeItem>,IBencodeItem
     {
-        public BencodeDictionary()
+        internal BencodeDictionary()
             : base()
         {
 
         }
-        public BencodeDictionary(IDictionary<string,IBencodeItem> dictionary)
+        internal BencodeDictionary(IDictionary<string,IBencodeItem> dictionary)
             : base(dictionary)
         {
 
         }
-        public BencodeDictionary(IDictionary<string, string> dictionary)
+        internal BencodeDictionary(IDictionary<string, string> dictionary)
         {
             foreach (KeyValuePair<string, string> item in dictionary)
             {
                 Add(item.Key, new BencodeString(item.Value));
             }
         }
-        public BencodeDictionary(IDictionary<string, int> dictionary)
+        internal BencodeDictionary(IDictionary<string, int> dictionary)
         {
             foreach (KeyValuePair<string, int> item in dictionary)
             {
                 Add(item.Key, new BencodeInt(item.Value));
             }
         }
-
-        public override string ToString()
+        internal BencodeDictionary(IDictionary<string, long> dictionary)
+        {
+            foreach (KeyValuePair<string, long> item in dictionary)
+            {
+                Add(item.Key, new BencodeInt(item.Value));
+            }
+        }
+        internal override string ToString()
         {
             string returnString = "";
             if (this.Count > 0)
@@ -64,24 +70,27 @@ namespace crtorrent.Bencode
             }
             return returnString;
         }
-        public void Add(string key, string value)
+        internal void Add(string key, string value)
         {
             Add(key,new BencodeString(value));
         }
-        public void Add(string key, int value)
+        internal void Add(string key, int value)
         {
             Add(key, new BencodeInt(value));
         }
-
-        public void AddList(string key, params string[] list)
+        internal void Add(string key, long value)
+        {
+            Add(key, new BencodeInt(value));
+        }
+        internal void AddList(string key, params string[] list)
         {
             Add(key, new BencodeList(list));
         }
-        public void AddList(string key, params int[] list)
+        internal void AddList(string key, params int[] list)
         {
             Add(key, new BencodeList(list));
         }
-        public void AddList(string key, params IBencodeItem[] list)
+        internal void AddList(string key, params IBencodeItem[] list)
         {
             Add(key, new BencodeList(list));
         }

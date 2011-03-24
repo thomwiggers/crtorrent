@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HasherStackTesting", "ConsoleApplication1\HasherStackTesting.csproj", "{DE436867-30FE-4201-97BE-75BB4341BB7F}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -49,6 +51,16 @@ Global
 		{12F4B473-145F-44A6-82A8-72C008B0C753}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{12F4B473-145F-44A6-82A8-72C008B0C753}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{12F4B473-145F-44A6-82A8-72C008B0C753}.Release|x86.ActiveCfg = Release|Any CPU
+		{DE436867-30FE-4201-97BE-75BB4341BB7F}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{DE436867-30FE-4201-97BE-75BB4341BB7F}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{DE436867-30FE-4201-97BE-75BB4341BB7F}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{DE436867-30FE-4201-97BE-75BB4341BB7F}.Debug|x86.ActiveCfg = Debug|x86
+		{DE436867-30FE-4201-97BE-75BB4341BB7F}.Debug|x86.Build.0 = Debug|x86
+		{DE436867-30FE-4201-97BE-75BB4341BB7F}.Release|Any CPU.ActiveCfg = Release|x86
+		{DE436867-30FE-4201-97BE-75BB4341BB7F}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{DE436867-30FE-4201-97BE-75BB4341BB7F}.Release|Mixed Platforms.Build.0 = Release|x86
+		{DE436867-30FE-4201-97BE-75BB4341BB7F}.Release|x86.ActiveCfg = Release|x86
+		{DE436867-30FE-4201-97BE-75BB4341BB7F}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

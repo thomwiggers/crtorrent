@@ -26,12 +26,14 @@ using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
 using System.Threading;
+using System.IO.MemoryMappedFiles;
+using System.Diagnostics;
+using System.Security.Cryptography;
 
 namespace crtorrent 
 {
 	class Hasher
 	{
-        private int bufferSize = 16777216;
         private CancellationTokenSource cancelToken;
 		
 		//Number of threads
@@ -41,7 +43,7 @@ namespace crtorrent
 		
 		// File paths
 		private List<string> files = new List<string>();
-		public List<string> Files
+		internal List<string> Files
 		{
 			get
 			{
@@ -55,36 +57,48 @@ namespace crtorrent
 		///
 		private List<Chunk> Chunks = new List<Chunk>();
 		
+        ///
+        /// Chunk count
+        /// 
+        internal int NumChunks
+        {
+            get
+            {
+                return Chunks.Count;
+            }
+        }
+
+
 		///
 		/// Initializing with certain values
 		///
-		public Hasher(CancellationTokenSource cancellationTokenSource, int threads, double usePieceLenght)
+		internal Hasher(CancellationTokenSource cancellationTokenSource, int threads, double usePieceLength)
 		{
             cancelToken = cancellationTokenSource;
 			numThreads = threads;
-			pieceLength = (int)usePiecelength;
+            pieceLength = (int) usePieceLength;
 		}
-		public Hasher(CancellationTokenSource cancellationTokenSource, int threads, int usePieceLenght)
+        internal Hasher(CancellationTokenSource cancellationTokenSource, int threads, int usePieceLength)
 		{
             cancelToken = cancellationTokenSource;
 			numThreads = threads;
-			pieceLength = usePiecelength;
+            pieceLength = usePieceLength;
 		}
 		
 		///
 		/// Initialising with defaults
 		///
-		public Hasher(CancellationTokenSource cancellationTokenSource)
+		internal Hasher(CancellationTokenSource cancellationTokenSource)
 		{
             cancelToken = cancellationTokenSource;
 			numThreads = 1;
-			pieceLength = Math.pow(2,18);
+			pieceLength = (int)Math.Pow(2,18);
 		}
 		
 		///
 		/// Add a file (duh)
 		///
-		public void AddFile(string path)
+		internal void AddFile(string path)
 		{
 			files.Add(path);
 		}
@@ -92,7 +106,7 @@ namespace crtorrent
 		///
 		/// Prepare for hashing
 		///
-		private void ChunkFiles(string[] filenames)
+		internal  void ChunkFiles()
 		{
 			string[] filenames = Files.ToArray();
 			Chunk currentChunk = null;
@@ -128,7 +142,7 @@ namespace crtorrent
 
 					if (currentChunk.Length >= pieceLength)
 					{
-						chunks.Add(currentChunk = new Chunk());
+						Chunks.Add(currentChunk = new Chunk());
 					}
 				}
 
@@ -137,7 +151,7 @@ namespace crtorrent
 				//
 				for (int i = 0; i < (fi.Length - offset) / pieceLength; i++)
 				{
-					chunks.Add(currentChunk = new Chunk());
+					Chunks.Add(currentChunk = new Chunk());
 					currentChunk.Sources.Add(new ChunkSource()
 					{
 						Filename = fi.FullName,
@@ -151,7 +165,7 @@ namespace crtorrent
 				int leftover = (int)(fi.Length - offset) % pieceLength;
 				if (leftover > 0)
 				{
-					chunks.Add(currentChunk = new Chunk());
+					Chunks.Add(currentChunk = new Chunk());
 					currentChunk.Sources.Add(new ChunkSource()
 					{
 						Filename = fi.FullName,
@@ -171,65 +185,63 @@ namespace crtorrent
 		///
 		/// Calculate Hashes
 		///
-	    private void ComputeHashes()
-		{
-			if (chunks == null || chunks.Count == 0)
-				return;
+        internal void ComputeHashes()
+        {
+            if (Chunks == null || Chunks.Count == 0)
+                return;
 
-			Dictionary<string, MemoryMappedFile> files = new Dictionary<string, MemoryMappedFile>();
+            Dictionary<string, MemoryMappedFile> files = new Dictionary<string, MemoryMappedFile>();
+            Parallel.ForEach(Chunks, new ParallelOptions() { MaxDegreeOfParallelism = numThreads }, (chunk, state, index) =>
+            {
+                MemoryMappedFile mms = null;
+                byte[] buffer = new byte[pieceLength];
 
-			foreach (var chunk in chunks)
-			{
-				MemoryMappedFile mms = null;
-				byte[] buffer = new byte[pieceLength];
-				ConcurrentDictionary<string, MemoryMappedFile> files = new ConcurrentDictionary<string, MemoryMappedFile>();
-				Parallel.ForEach(chunks, new ParallelOptions() { MaxDegreeOfParallelism = 2 }, (chunk, state, index) =>
-				{
-					MemoryMappedFile mms = null;
-					byte[] buffer = new byte[pieceLength];
+                foreach (var source in chunk.Sources)
+                {
+                    lock (files)
+                    {
+                        if (!files.TryGetValue(source.Filename, out mms))
+                        {
+                            Debug.WriteLine(String.Format("Opening {0}", source.Filename));
+                            files.Add(source.Filename, mms = MemoryMappedFile.CreateFromFile(source.Filename, FileMode.Open));
+                        }
+                    }
 
-					foreach (var source in chunk.Sources)
-					{
-						if (!files.TryGetValue(source.Filename, out mms)) {
-							{
-								Debug.WriteLine(String.Format("Opening {0}", source.Filename));
-								files.Add(source.Filename, mms = MemoryMappedFile.CreateFromFile(source.Filename, FileMode.Open));
-							}
-						}
+                    var view = mms.CreateViewStream(source.StartPosition, source.Length);
+                    view.Read(buffer, 0, source.Length);
+                }
 
-						var view = mms.CreateViewStream(source.StartPosition, source.Length);
-						view.Read(buffer, 0, source.Length);
-					}
+                Debug.WriteLine("Done reading sources");
 
-					Debug.WriteLine("Done reading sources");
-					using (SHA1CryptoServiceProvider sha1 = new SHA1CryptoServiceProvider())
-					{
-						sha1.Initialize();
-						chunk.Hash = sha1.ComputeHash(buffer);
-					}
-					Debug.WriteLine(String.Format("Computed hash: {0}", String.Join("-", chunk.Hash.Select(h => h.ToString("X2")).ToArray())));
-				});
-			}
+                using (SHA1CryptoServiceProvider sha1 = new SHA1CryptoServiceProvider())
+                {
+                    sha1.Initialize();
+                    chunk.Hash = sha1.ComputeHash(buffer);
+                }
 
-			foreach (var f in files.Values)
-			{
-				f.Dispose();
-			}
-		}
+                Debug.WriteLine(String.Format("Computed hash: {0}", String.Join("-", chunk.Hash.Select(h => h.ToString("X2")).ToArray())));
+            });
+
+            foreach (var x in files.Values)
+            {
+                x.Dispose();
+            }
+        }
+
 
 		///
 		/// Get all hashes as byte[] 
 		///
-		public byte[] GetHashes()
+		internal byte[] GetHashes()
 		{
-			if (chunks == null || chunks.Count == 0)
-				return;
+			if (Chunks == null || Chunks.Count == 0)
+				return null;
 			
-			long hashLength = chunks.Count * pieceLength;
+			long hashLength = Chunks.Count * pieceLength;
 			
 			List<byte> hash = new List<byte>();
 			
-			foreach (Chunk chunk in chunks)
+			foreach (Chunk chunk in Chunks)
 			{
 				hash.AddRange(chunk.Hash);
 			}

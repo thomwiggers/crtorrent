@@ -20,12 +20,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 namespace crtorrent
 {
     class Program
     {
+        private static CancellationTokenSource cancelToken = new CancellationTokenSource();
         public const string appName = "crtorrent";
         public const string version = "0.1a";
         public const string fullVersionInformation = "Alpha build, does not do anything yet.";
@@ -33,18 +37,20 @@ namespace crtorrent
         const string COPYRIGHT = "copyright";
         const string VERSION = "version";
         const string INTRO = "intro";
-        static string comment = "Created with crtorrent " + version;
-        protected internal static int numThreads = 1;
-        protected internal static bool privateFlag = false;
-        protected internal static bool verboseFlag = false;
-        protected internal static bool dateFlag = true;
-        protected internal static string name = string.Empty;
-        private static int NumThreads
+        protected internal static string comment = "Created with crtorrent " + version;
+        // -1 means let C# decide.
+        protected internal static int numThreads = -1;
+        protected internal static int NumThreads
         {
             get { return numThreads; }
             set { if (value > 0) { numThreads = value; } }
         }
-        protected internal static List<string> announceUrls = new List<string>();
+
+        protected internal static bool privateFlag = false;
+        protected internal static bool verboseFlag = false;
+        protected internal static bool dateFlag = true;
+        protected internal static string name = string.Empty;
+        protected internal static HashSet<string> announceUrls = new HashSet<string>();
         private static string AnnounceUrl
         {
             set {
@@ -75,14 +81,15 @@ namespace crtorrent
 
         private static string outputFile = null;
 
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             try
             {
+                Console.TreatControlCAsInput = false;
+                Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
+
                 PrintSection(INTRO);
                 args = Environment.GetCommandLineArgs();
-
-                
 
                 for (int i = 0; i < args.Length; i++)
                 {
@@ -198,7 +205,7 @@ namespace crtorrent
                     Console.WriteLine("Private:       {0}", privateFlag);
                     Console.WriteLine("Path:        {0}", path);
                     Console.WriteLine("Announce urls: ");
-                    foreach (string url in announceUrls.ToArray())
+                    foreach (string url in announceUrls)
                     {
                         Console.WriteLine("- Url:         {0}", url);
                     }
@@ -207,7 +214,7 @@ namespace crtorrent
 
                 //beginnen maar
                 //TODO
-                Metafile metafile = new Metafile("test.exe", announceUrls.ToArray(), privateFlag, dateFlag, comment, outputFile, numThreads, Math.Pow(2,18), appName + " " + version);
+                Metafile metafile = new Metafile("test.exe", announceUrls.ToArray(), privateFlag, dateFlag, comment, outputFile, numThreads, Math.Pow(2,18), appName + " " + version, cancelToken);
 
             }
             catch (FatalException e)
@@ -224,6 +231,15 @@ namespace crtorrent
                 }
                 Console.WriteLine("\r\n Type {0} --help for help about this program", Path.GetFileName(Environment.GetCommandLineArgs()[0]));
             }
+        }
+
+        static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        {
+            Console.WriteLine("Intercepted CancelKeyPress");
+            Console.WriteLine("Aborting...");
+            e.Cancel = true;
+            cancelToken.Cancel();
+            throw new NotImplementedException();
         }
 
 

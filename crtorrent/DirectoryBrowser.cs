@@ -27,13 +27,13 @@ namespace crtorrent
 
     class DirectoryBrowser
     {
-        public DirectoryInfo RootDirectory
+        internal DirectoryInfo RootDirectory
         {
             get;
             set;
         }
 
-        public DirectoryBrowser(string path)
+        internal DirectoryBrowser(string path)
         {
             if (!Directory.Exists(path))
             {
@@ -41,7 +41,7 @@ namespace crtorrent
             }
             RootDirectory = new DirectoryInfo(path);
         }
-        public DirectoryBrowser getSubDirectory(string subdirectory)
+        internal DirectoryBrowser getSubDirectory(string subdirectory)
         {
             if(Path.IsPathRooted(subdirectory))
             {
@@ -62,7 +62,7 @@ namespace crtorrent
             throw new DirectoryNotFoundException("Subdirectory "+subdirectory + " not found");
         }
 
-        public DirectoryBrowser[] getSubDirectories()
+        internal DirectoryBrowser[] getSubDirectories()
         {
             List<DirectoryBrowser> returnList = new List<DirectoryBrowser>();
             foreach(DirectoryInfo d in RootDirectory.GetDirectories())
@@ -72,12 +72,12 @@ namespace crtorrent
             return returnList.ToArray();
         }
 
-        public FileInfo[] getFiles()
+        internal FileInfo[] getFiles()
         {
             return RootDirectory.GetFiles();
         }
 
-        public FileInfo[] getAllFiles()
+        internal FileInfo[] getAllFiles()
         {
             return RootDirectory.GetFiles("*", SearchOption.AllDirectories);
         }

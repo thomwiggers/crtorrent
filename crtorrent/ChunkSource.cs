@@ -18,9 +18,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- public class ChunkSource
+namespace crtorrent
 {
-    public string Filename { get; set; }
-    public int StartPosition { get; set; }
-    public int Length { get; set; }
+    internal class ChunkSource
+    {
+        internal string Filename { get; set; }
+        internal int StartPosition { get; set; }
+        internal int Length { get; set; }
+    }
 }

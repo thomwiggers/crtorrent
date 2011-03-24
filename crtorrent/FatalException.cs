@@ -23,27 +23,27 @@
 namespace crtorrent
 {
 
-    public class FatalException : Exception
+    internal class FatalException : Exception
     {
-        public FatalException() 
+        internal FatalException() 
             : base("ERROR: FATAL ERROR")
         {
 
         }
 
-        public FatalException(String message)
+        internal FatalException(String message)
             : base(message)
         {
 
         }
 
-        public FatalException(String message, Exception innerException)
+        internal FatalException(String message, Exception innerException)
             : base(message, innerException)
         {
 
         }
 
-        public FatalException(Exception innerException)
+        internal FatalException(Exception innerException)
             : base(innerException.Message, innerException)
         {
 

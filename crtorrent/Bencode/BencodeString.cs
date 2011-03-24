@@ -21,24 +21,24 @@
  */
 namespace crtorrent.Bencode
 {
-    public class BencodeString : IBencodeItem
+    internal class BencodeString : IBencodeItem
     {
-        public string Value
+        internal string Value
         {
             set;
             get;
         }
 
-        public BencodeString()
+        internal BencodeString()
         {
 
         }
-        public BencodeString(string value)
+        internal BencodeString(string value)
         {
             this.Value = value;
         }
 
-        public override string ToString()
+        internal override string ToString()
         {
             if (Value != null)
             {
