@@ -40,7 +40,7 @@ namespace crtorrent
             }
             metafile.Add("created by", creator);
             metafile.Add("announce", announceUrls[0]);
-            //metafile.Add("encoding", Encoding.UTF8.WebName);
+            metafile.Add("encoding", Encoding.UTF8.WebName);
             if(announceUrls.Length > 1)
             {
                 metafile.AddList("announce-list", announceUrls);
@@ -64,56 +64,64 @@ namespace crtorrent
                 if (targetType == "DIR")
                 {
                     DirectoryInfo dir = new DirectoryInfo(path);
-                    files.Union(dir.GetFiles("*", SearchOption.AllDirectories));
+                    files.AddRange(dir.GetFiles("*", SearchOption.AllDirectories));
                     infoDict.Add("name", dir.Name);
                     
                     
                     BencodeList fileList = new BencodeList();
                     
-                    string[] rootPathSegements = dir.Name.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    string[] rootPathSegements = dir.FullName.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
-                    Parallel.ForEach(files, 
-                            new ParallelOptions() {
-                                MaxDegreeOfParallelism = threads,
-                                CancellationToken = cancelToken.Token
-                            }, 
-                            (file, state, index) =>
+
+                    foreach (FileInfo file in files)
                     {
-                        BencodeDictionary filesDictionary = new BencodeDictionary();
+                        BencodeDictionary fileDictionary = new BencodeDictionary();
+
                         string filePath = file.FullName;
-                        
+
                         hasher.AddFile(filePath);
-                        filesDictionary.Add("length", file.Length);
-                        
+                        fileDictionary.Add("length", file.Length);
+
+                        Task t = Task.Factory.StartNew(() =>
+                        {
+                            using (MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider())
+                            {
+                                md5.Initialize();
+                                FileStream f = File.OpenRead(filePath);
+                                byte[] hash = md5.ComputeHash(f);
+                                StringBuilder sb = new StringBuilder();
+                                foreach (byte h in hash)
+                                {
+                                    sb.Append(h.ToString("X2"));
+                                }
+                                fileDictionary.Add("md5sum", sb.ToString());
+                                f.Dispose();
+                            }
+                        });
+
                         // Pad maken
                         string[] segments = filePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
                         BencodeList bencodePath = new BencodeList();
                         for (int i = 0; i < segments.Length; i++)
                         {
                             if (rootPathSegements.Length > i)
+                            {
                                 if (segments[i] == rootPathSegements[i])
+                                {
                                     continue;
+                                }
+                            }
                             else
                             {
                                 bencodePath.Add(segments[i]);
                             }
                         }
-                        filesDictionary.Add("path", bencodePath);
+                        fileDictionary.Add("path", bencodePath);
 
-                        using (MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider())
-                        {
-                            md5.Initialize();
-                            FileStream f = File.OpenRead(path);
-                            byte[] hash = md5.ComputeHash(f);
-                            StringBuilder sb = new StringBuilder();
-                            foreach (byte h in hash)
-                            {
-                                sb.Append(h.ToString("X2"));
-                            }
-                            filesDictionary.Add("md5sum", sb.ToString());
-                            f.Dispose();
-                        }
-                    });
+                        t.Wait();
+                        fileList.Add(fileDictionary);
+                    }
+                    infoDict.Add("files", fileList);
                     hasher.ChunkFiles();
 
                 }

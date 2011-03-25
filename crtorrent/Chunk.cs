@@ -30,7 +30,7 @@ namespace crtorrent
 
         internal IList<ChunkSource> Sources { get { return _sources; } }
         internal byte[] Hash { get; set; }
-        internal int Length
+        internal long Length
         {
             get { return Sources.Select(s => s.Length).Sum(); }
         }

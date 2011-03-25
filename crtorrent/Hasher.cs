@@ -39,7 +39,7 @@ namespace crtorrent
 		//Number of threads
 		private int numThreads;
 		//piecelength
-		private int pieceLength;
+		private long pieceLength;
 		
 		// File paths
 		private List<string> files = new List<string>();
@@ -110,7 +110,7 @@ namespace crtorrent
 		{
 			string[] filenames = Files.ToArray();
 			Chunk currentChunk = null;
-			int offset = 0;
+			long offset = 0;
 
 			foreach (string filename in filenames)
 			{
@@ -128,7 +128,7 @@ namespace crtorrent
 					//
 					// We get here if the previous file had leftover bytes that left us with an incomplete chunk
 					//
-					int needed = pieceLength - currentChunk.Length;
+                    long needed = pieceLength - currentChunk.Length;
 					if (needed == 0)
 						throw new InvalidOperationException("Something went wonky, shouldn't be here");
 
@@ -137,7 +137,7 @@ namespace crtorrent
 					{
 						Filename = fi.FullName,
 						StartPosition = 0,
-						Length = (int)Math.Min(fi.Length, (long)needed)
+						Length = Math.Min(fi.Length, needed)
 					});
 
 					if (currentChunk.Length >= pieceLength)
@@ -162,14 +162,14 @@ namespace crtorrent
 					Debug.WriteLine(String.Format("Chunk source created: Offset = {0,10}, Length = {1,10}", currentChunk.Sources[0].StartPosition, currentChunk.Sources[0].Length));
 				}
 
-				int leftover = (int)(fi.Length - offset) % pieceLength;
+				long leftover = (fi.Length - offset) % pieceLength;
 				if (leftover > 0)
 				{
 					Chunks.Add(currentChunk = new Chunk());
 					currentChunk.Sources.Add(new ChunkSource()
 					{
 						Filename = fi.FullName,
-						StartPosition = (int)(fi.Length - leftover),
+						StartPosition = fi.Length - leftover,
 						Length = leftover
 					});
 				}
@@ -178,8 +178,9 @@ namespace crtorrent
 					currentChunk = null;
 					offset = 0;
 				}
-
+                
 			}
+            Debug.Write("Done");
 		}
 		
 		///
@@ -194,9 +195,9 @@ namespace crtorrent
             Parallel.ForEach(Chunks, new ParallelOptions() { MaxDegreeOfParallelism = numThreads }, (chunk, state, index) =>
             {
                 MemoryMappedFile mms = null;
-                byte[] buffer = new byte[pieceLength];
+                byte[] buffer = new byte[(int)pieceLength];
                 if (chunk.Length < pieceLength)
-                    buffer = new byte[chunk.Length];
+                    buffer = new byte[(int)chunk.Length];
                
 
                 foreach (var source in chunk.Sources)
@@ -211,7 +212,7 @@ namespace crtorrent
                     }
 
                     var view = mms.CreateViewStream(source.StartPosition, source.Length);
-                    view.Read(buffer, 0, source.Length);
+                    view.Read(buffer, 0, (int)source.Length);
                 }
 
                 Debug.WriteLine("Done reading sources");

@@ -23,7 +23,7 @@ namespace crtorrent
     internal class ChunkSource
     {
         internal string Filename { get; set; }
-        internal int StartPosition { get; set; }
-        internal int Length { get; set; }
+        internal long StartPosition { get; set; }
+        internal long Length { get; set; }
     }
 }
