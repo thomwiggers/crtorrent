@@ -112,75 +112,51 @@ namespace crtorrent
 			Chunk currentChunk = null;
 			long offset = 0;
 
-			foreach (string filename in filenames)
-			{
-				FileInfo fi = new FileInfo(filename);
-				if (!fi.Exists)
-					throw new FileNotFoundException(filename);
+            foreach (string filename in filenames)
+            {
+                FileInfo fi = new FileInfo(filename);
+                if (!fi.Exists)
+                    throw new FileNotFoundException(filename);
 
-				Debug.WriteLine(String.Format("File: {0}", filename));
-				//
-				// First, start off by either starting a new chunk or 
-				// by finishing a leftover chunk from a previous file.
-				//
-				if (currentChunk != null)
-				{
-					//
-					// We get here if the previous file had leftover bytes that left us with an incomplete chunk
-					//
-                    long needed = pieceLength - currentChunk.Length;
-					if (needed == 0)
-						throw new InvalidOperationException("Something went wonky, shouldn't be here");
-
-					offset = needed;
-					currentChunk.Sources.Add(new ChunkSource()
-					{
-						Filename = fi.FullName,
-						StartPosition = 0,
-						Length = Math.Min(fi.Length, needed)
-					});
-
-					if (currentChunk.Length >= pieceLength)
-					{
-						Chunks.Add(currentChunk = new Chunk());
-					}
-				}
-
-				//
-				// Note: Using integer division here
-				//
-				for (int i = 0; i < (fi.Length - offset) / pieceLength; i++)
-				{
-					Chunks.Add(currentChunk = new Chunk());
-					currentChunk.Sources.Add(new ChunkSource()
-					{
-						Filename = fi.FullName,
-						StartPosition = i * pieceLength + offset,
-						Length = pieceLength
-					});
-
-					Debug.WriteLine(String.Format("Chunk source created: Offset = {0,10}, Length = {1,10}", currentChunk.Sources[0].StartPosition, currentChunk.Sources[0].Length));
-				}
-
-				long leftover = (fi.Length - offset) % pieceLength;
-				if (leftover > 0)
-				{
-					Chunks.Add(currentChunk = new Chunk());
-					currentChunk.Sources.Add(new ChunkSource()
-					{
-						Filename = fi.FullName,
-						StartPosition = fi.Length - leftover,
-						Length = leftover
-					});
-				}
-				else
-				{
-					currentChunk = null;
-					offset = 0;
-				}
+                Debug.WriteLine(String.Format("File: {0}", filename));
                 
-			}
-            Debug.Write("Done");
+                //check if we don't already have a chunk
+                if (currentChunk == null)
+                {
+                    currentChunk = new Chunk();
+                    Chunks.Add(currentChunk);
+                }
+
+                long bytesLeft = fi.Length;
+                while (bytesLeft > 0)
+                {
+                    long needed = pieceLength - currentChunk.Length;
+                    //check if chunk full.
+                    if (needed == 0)
+                    {
+                        Debug.WriteLine("Adding new chunk, chunk full");
+                        currentChunk = new Chunk();
+                        Chunks.Add(currentChunk);
+                        needed = pieceLength;
+                    }
+
+                    // add new chunk for this file.
+                    ChunkSource cs = new ChunkSource()
+                    {
+                        Filename = filename,
+                        Length = Math.Min((fi.Length-offset), needed),
+                        StartPosition = offset
+                    };
+                    Debug.WriteLine(String.Format("ChunkSource created: \n    Fn: {0}\n    Lenght: {1}\n     Offset = {2}", 
+                                                    filename, Math.Min(fi.Length, pieceLength).ToString(), offset.ToString()));
+                    offset += cs.Length;
+                    bytesLeft -= cs.Length;
+                    currentChunk.Sources.Add(cs);
+
+                }
+                        
+            }
+
 		}
 		
 		///
@@ -192,7 +168,7 @@ namespace crtorrent
                 return;
 
             Dictionary<string, MemoryMappedFile> files = new Dictionary<string, MemoryMappedFile>();
-            Parallel.ForEach(Chunks, new ParallelOptions() { MaxDegreeOfParallelism = numThreads }, (chunk, state, index) =>
+            foreach(Chunk chunk in Chunks)
             {
                 MemoryMappedFile mms = null;
                 byte[] buffer = new byte[(int)pieceLength];
@@ -206,16 +182,16 @@ namespace crtorrent
                     {
                         if (!files.TryGetValue(source.Filename, out mms))
                         {
-                            Debug.WriteLine(String.Format("Opening {0}", source.Filename));
-                            files.Add(source.Filename, mms = MemoryMappedFile.CreateFromFile(source.Filename,FileMode.Open));
+                         //   Debug.WriteLine(String.Format("Opening {0}", source.Filename));
+                            files.Add(source.Filename, mms = MemoryMappedFile.CreateFromFile(source.Filename, FileMode.Open));
                         }
                     }
 
-                    var view = mms.CreateViewStream(source.StartPosition, source.Length);
+                    var view = mms.CreateViewStream(source.StartPosition, source.Length, MemoryMappedFileAccess.Read);
                     view.Read(buffer, 0, (int)source.Length);
                 }
 
-                Debug.WriteLine("Done reading sources");
+              //  Debug.WriteLine("Done reading sources");
 
                 using (SHA1CryptoServiceProvider sha1 = new SHA1CryptoServiceProvider())
                 {
@@ -224,8 +200,8 @@ namespace crtorrent
                     chunk.Hash = sha1.ComputeHash(buffer);
                 }
 
-                Debug.WriteLine(String.Format("Computed hash: {0}", String.Join("-", chunk.Hash.Select(h => h.ToString("X2")).ToArray())));
-            });
+                //Debug.WriteLine(String.Format("Computed hash: {0}", String.Join("-", chunk.Hash.Select(h => h.ToString("X2")).ToArray())));
+            }
 
             foreach (var x in files.Values)
             {
