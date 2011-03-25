@@ -110,10 +110,12 @@ namespace crtorrent
 		{
 			string[] filenames = Files.ToArray();
 			Chunk currentChunk = null;
-			long offset = 0;
+			
 
             foreach (string filename in filenames)
             {
+                long offset = 0;
+
                 FileInfo fi = new FileInfo(filename);
                 if (!fi.Exists)
                     throw new FileNotFoundException(filename);
@@ -144,11 +146,11 @@ namespace crtorrent
                     ChunkSource cs = new ChunkSource()
                     {
                         Filename = filename,
-                        Length = Math.Min((fi.Length-offset), needed),
+                        Length = Math.Min((fi.Length - offset), needed),
                         StartPosition = offset
                     };
-                    Debug.WriteLine(String.Format("ChunkSource created: \n    Fn: {0}\n    Lenght: {1}\n     Offset = {2}", 
-                                                    filename, Math.Min(fi.Length, pieceLength).ToString(), offset.ToString()));
+                    Debug.WriteLine(String.Format("ChunkSource created: \n    Fn: {0}\n    Lenght: {1}\n     Offset = {2}",
+                                                    filename, Math.Min((fi.Length - offset), needed).ToString(), offset.ToString()));
                     offset += cs.Length;
                     bytesLeft -= cs.Length;
                     currentChunk.Sources.Add(cs);
@@ -178,17 +180,19 @@ namespace crtorrent
 
                 foreach (var source in chunk.Sources)
                 {
+                    int offset = 0;
                     lock (files)
                     {
                         if (!files.TryGetValue(source.Filename, out mms))
                         {
-                         //   Debug.WriteLine(String.Format("Opening {0}", source.Filename));
+                            Debug.WriteLine(String.Format("Opening {0}", source.Filename));
                             files.Add(source.Filename, mms = MemoryMappedFile.CreateFromFile(source.Filename, FileMode.Open));
                         }
                     }
 
-                    var view = mms.CreateViewStream(source.StartPosition, source.Length, MemoryMappedFileAccess.Read);
-                    view.Read(buffer, 0, (int)source.Length);
+                    MemoryMappedViewStream view = mms.CreateViewStream(source.StartPosition, source.Length, MemoryMappedFileAccess.Read);
+                    view.Read(buffer, offset, (int)source.Length);
+                    offset += (int)source.Length;
                 }
 
               //  Debug.WriteLine("Done reading sources");
