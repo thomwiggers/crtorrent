@@ -68,7 +68,6 @@ namespace crtorrent
             }
         }
         protected internal static string path = "";
-        protected internal static string targetType;
         protected internal static double pieceLength = Math.Pow(2,18);
         private static double PieceLength
         {
