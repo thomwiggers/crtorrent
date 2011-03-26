@@ -25,7 +25,8 @@ namespace crtorrent
             metafile = new BencodeDictionary();
             
             BencodeDictionary infoDict = new BencodeDictionary();
-            infoDict.Add("private", 1);
+            
+            infoDict.Add("private", privateFlag ? 1 : 0);
             infoDict.Add("piece length", (long)pieceLenght);
 
             if (setDateFlag)

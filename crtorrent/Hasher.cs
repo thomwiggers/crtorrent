@@ -176,11 +176,11 @@ namespace crtorrent
                 byte[] buffer = new byte[(int)pieceLength];
                 if (chunk.Length < pieceLength)
                     buffer = new byte[(int)chunk.Length];
-               
+                int offset = 0;
 
                 foreach (var source in chunk.Sources)
                 {
-                    int offset = 0;
+                    
                     lock (files)
                     {
                         if (!files.TryGetValue(source.Filename, out mms))
@@ -195,8 +195,7 @@ namespace crtorrent
                     offset += (int)source.Length;
                 }
 
-              //  Debug.WriteLine("Done reading sources");
-
+                Debug.WriteLine("Done reading sources");
                 using (SHA1CryptoServiceProvider sha1 = new SHA1CryptoServiceProvider())
                 {
 
@@ -204,7 +203,7 @@ namespace crtorrent
                     chunk.Hash = sha1.ComputeHash(buffer);
                 }
 
-                //Debug.WriteLine(String.Format("Computed hash: {0}", String.Join("-", chunk.Hash.Select(h => h.ToString("X2")).ToArray())));
+                Debug.WriteLine(String.Format("Computed hash: {0}", String.Join("-", chunk.Hash.Select(h => h.ToString("X2")).ToArray())));
             }
 
             foreach (var x in files.Values)
