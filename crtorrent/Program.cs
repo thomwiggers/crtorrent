@@ -181,8 +181,6 @@ namespace crtorrent
                     case "l":
                     case "outfile":
                     case "o":
-                    case "p":
-                    case "private":
                     case "name":
                     case "n":
                         throw new FatalException("Error: No target specified");
