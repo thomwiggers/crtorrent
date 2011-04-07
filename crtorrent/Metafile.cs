@@ -73,8 +73,7 @@ namespace crtorrent
                     
                     string[] rootPathSegements = dir.FullName.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
-
-                    foreach (FileInfo file in files)
+                    Parallel.ForEach(files, (file) =>
                     {
                         BencodeDictionary fileDictionary = new BencodeDictionary();
 
@@ -121,7 +120,7 @@ namespace crtorrent
 
                         t.Wait();
                         fileList.Add(fileDictionary);
-                    }
+                    });
                     infoDict.Add("files", fileList);
                     hasher.ChunkFiles();
 

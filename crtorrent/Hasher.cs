@@ -114,6 +114,7 @@ namespace crtorrent
 
             foreach (string filename in filenames)
             {
+                cancelToken.Token.ThrowIfCancellationRequested();
                 long offset = 0;
 
                 FileInfo fi = new FileInfo(filename);
@@ -132,6 +133,7 @@ namespace crtorrent
                 long bytesLeft = fi.Length;
                 while (bytesLeft > 0)
                 {
+                    cancelToken.Token.ThrowIfCancellationRequested();
                     long needed = pieceLength - currentChunk.Length;
                     //check if chunk full.
                     if (needed == 0)
@@ -170,7 +172,7 @@ namespace crtorrent
                 return;
 
             Dictionary<string, MemoryMappedFile> files = new Dictionary<string, MemoryMappedFile>();
-            foreach(Chunk chunk in Chunks)
+            Parallel.ForEach(Chunks, new ParallelOptions() { CancellationToken = cancelToken.Token, MaxDegreeOfParallelism = numThreads }, (chunk, state, index) =>
             {
                 MemoryMappedFile mms = null;
                 byte[] buffer = new byte[(int)pieceLength];
@@ -180,7 +182,7 @@ namespace crtorrent
 
                 foreach (var source in chunk.Sources)
                 {
-                    
+                    cancelToken.Token.ThrowIfCancellationRequested();
                     lock (files)
                     {
                         if (!files.TryGetValue(source.Filename, out mms))
@@ -204,12 +206,12 @@ namespace crtorrent
                 }
 
                 Debug.WriteLine(String.Format("Computed hash: {0}", String.Join("-", chunk.Hash.Select(h => h.ToString("X2")).ToArray())));
-            }
+            });
 
-            foreach (var x in files.Values)
+            Parallel.ForEach(files.Values, (x) =>
             {
                 x.Dispose();
-            }
+            });
         }
 
 

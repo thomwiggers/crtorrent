@@ -31,8 +31,8 @@ namespace crtorrent
     {
         private static CancellationTokenSource cancelToken = new CancellationTokenSource();
         public const string appName = "crtorrent";
-        public const string version = "0.1a";
-        public const string fullVersionInformation = "Alpha build, does not do anything yet.";
+        public const string version = "0.2b";
+        public const string fullVersionInformation = "beta build, Second release.";
         const string HELP = "help";
         const string COPYRIGHT = "copyright";
         const string VERSION = "version";
@@ -280,7 +280,7 @@ namespace crtorrent
 --version                      Displays version information.
 --copyright                    Displays copyright and warranty information.
 --threads (-t) <value>         Sets the number of threads used.
-                                    (Defaults to 1)
+                                    (Defaults to 'let system decide')
 --comment (-c) <comment>       Sets the comment in the metafile.
 --piece-length (-l) <length>   Sets the piecelength to 2^<length>.
 --announce (-a) <url>[,<url>]  Sets the announce URL. Use more than one parameter
