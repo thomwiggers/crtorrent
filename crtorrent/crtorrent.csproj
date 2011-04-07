@@ -157,6 +157,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <None Include="make.bat" />
     <None Include="Properties\app.manifest" />
     <None Include="StrongNameKey.snk" />
   </ItemGroup>
