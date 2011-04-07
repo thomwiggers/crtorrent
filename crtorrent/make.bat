@@ -5,10 +5,12 @@ set PATH=%PATH%;%WINDIR%\Microsoft.NET\Framework\v4.0.30319\
 pause
 
 IF NOT EXIST %WINDIR%\Microsoft.NET\Framework\v4.0.30319\ goto NO_NET_FRAMEWORK
+
+
+:Compile
 del /F bin
 mkdir bin
 
-:Compile
 Echo building:
 Echo ---------
 csc /optimize /reference:system.dll /reference:system.core.dll /main:crtorrent.Program /target:exe /out:bin/crtorrent.exe *.cs Bencode\*.cs
