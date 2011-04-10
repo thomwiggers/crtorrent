@@ -21,6 +21,8 @@
  */
 
 using System.Collections.Generic;
+using System.Text;
+
 namespace crtorrent.Bencode
 {
 
@@ -86,14 +88,14 @@ namespace crtorrent.Bencode
             if (this.Count > 0)
             {
                 List<byte> blist = new List<byte>();
-                blist.AddRange(System.Text.Encoding.UTF8.GetBytes("l"));
+                blist.AddRange(UTF8Encoding.UTF8.GetBytes("l"));
                 foreach (IBencodeItem item in this)
                 {
                     byte[] value = item.ToBytes();
                     if(value != null)
                         blist.AddRange(value);
                 }
-                blist.AddRange(System.Text.Encoding.UTF8.GetBytes("e"));
+                blist.AddRange(UTF8Encoding.UTF8.GetBytes("e"));
                 return blist.ToArray();
             }
             else return null;

@@ -25,6 +25,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Text;
+
 namespace crtorrent
 {
     class Program
@@ -219,9 +222,11 @@ namespace crtorrent
                 //beginnen maar
                 Metafile metafile = new Metafile(path, announceUrls.ToArray(), privateFlag, dateFlag, comment, outputFile, numThreads, Math.Pow(2,18), appName + " " + version, cancelToken);
 
-                FileStream fout = File.Open(outputFile, FileMode.CreateNew);
-                byte[] mfile =  metafile.metafile.ToBytes();
-                fout.Write(mfile, 0, mfile.Length);
+                File.WriteAllBytes(outputFile, metafile.metafile.ToBytes());
+                
+
+                
+                
 
             }
             catch (FatalException e)

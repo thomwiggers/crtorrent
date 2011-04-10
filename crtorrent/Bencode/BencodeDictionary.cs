@@ -70,6 +70,7 @@ namespace crtorrent.Bencode
             }
             return returnString;
         }
+
         public byte[] ToBytes()
         {
             List<byte> blist = new List<byte>();
@@ -90,6 +91,7 @@ namespace crtorrent.Bencode
             }
             return null;
         }
+ 
 
 
         internal void Add(string key, string value)

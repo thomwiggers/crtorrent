@@ -54,7 +54,7 @@ namespace crtorrent.Bencode
         {
             if (Value != null)
             {
-                return Value.Length + ":" + Value;
+                return String.Format("{0}:{1}", Encoding.UTF8.GetByteCount(Value), Value);
             }
             return "";
         }
@@ -63,7 +63,8 @@ namespace crtorrent.Bencode
         {
             if (ByteValue == null)
             {
-                return Encoding.UTF8.GetBytes(ToString());
+                string returnString = String.Format("{0}:{1}", Encoding.UTF8.GetByteCount(Value), Value);
+                return UTF8Encoding.UTF8.GetBytes(returnString);
             }
             else
             {
