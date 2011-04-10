@@ -1,0 +1,11 @@
+Build using make.bat on windows, or use make.sh on Linux/Unix systems.
+
+System requirements:
+========================
+Windows: 
+	* .NET 4.0 runtime
+	
+
+Linux / Unix:
+	* Mono 2.8 or later.
+	     2.10 recommended
