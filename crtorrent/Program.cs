@@ -34,7 +34,7 @@ namespace crtorrent
     {
         private static CancellationTokenSource cancelToken = new CancellationTokenSource();
         public const string appName = "crtorrent";
-        public const string version = "0.2b";
+        public const string version = "0.2 delta";
         public const string fullVersionInformation = "beta build, Second release.";
         const string HELP = "help";
         const string COPYRIGHT = "copyright";
