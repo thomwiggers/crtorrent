@@ -1,10 +1,13 @@
 @echo off
+
+
+
 IF EXIST %WINDIR%\Microsoft.NET\Framework64\v4.0.30319\csc.exe GOTO SETX64
 
-set PATH=%PATH%;%WINDIR%\Microsoft.NET\Framework\v4.0.30319\
-pause
 
 IF NOT EXIST %WINDIR%\Microsoft.NET\Framework\v4.0.30319\ goto NO_NET_FRAMEWORK
+
+set PATH=%PATH%;%WINDIR%\Microsoft.NET\Framework\v4.0.30319\
 
 
 :Compile
