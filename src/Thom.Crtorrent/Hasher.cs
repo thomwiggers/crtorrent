@@ -153,6 +153,7 @@ namespace Thom.Crtorrent
 				long offset = 0;
 
 				FileInfo fi = new FileInfo (filename);
+				long filelength = fi.Length;
 				if (!fi.Exists)
 					throw new FileNotFoundException (filename);
 
@@ -164,7 +165,7 @@ namespace Thom.Crtorrent
 					Chunks.Add (currentChunk);
 				}
 
-				while (fi.Length > 0) {
+				while (filelength > 0) {
 					cancelToken.Token.ThrowIfCancellationRequested ();
 					long needed = pieceLength - currentChunk.Length;
 					//check if chunk full.
@@ -179,14 +180,14 @@ namespace Thom.Crtorrent
 					ChunkSource cs = new ChunkSource ()
                     {
                         Filename = filename,
-                        Length = Math.Min((fi.Length - offset), needed),
+                        Length = Math.Min((filelength - offset), needed),
                         StartPosition = offset
                     };
 					Debug.WriteLine (String.Format ("ChunkSource created: \n    Fn: {0}\n    Lenght: {1}\n     Offset = {2}",
-                                                    filename, Math.Min ((fi.Length - offset), needed).ToString (), offset.ToString ())
+                                                    filename, Math.Min ((filelength - offset), needed).ToString (), offset.ToString ())
 					);
 					offset += cs.Length;
-					fi.Length -= cs.Length;
+					filelength -= cs.Length;
 					currentChunk.Sources.Add (cs);
 
 				}

@@ -146,7 +146,7 @@ namespace Thom.Crtorrent
 		/// <summary>
 		/// The path.
 		/// </summary>
-        protected internal static string Path = "";
+        private static string path = "";
         
 		/// <summary>
 		/// The length of the piece.
@@ -161,7 +161,7 @@ namespace Thom.Crtorrent
 		/// </value>
         protected static double PieceLength
         {
-            get;
+            get { return pieceLength; }
             set
             {
                 pieceLength = Math.Pow(2, value < 18 && value >30 ? 18 : value);
@@ -285,7 +285,7 @@ namespace Thom.Crtorrent
                         throw new FatalException("Error: No target specified");
                 }
 
-                Path = args[args.Length - 1];
+                path = args[args.Length - 1];
                            
                 //validatie:
                 if (AnnounceUrls.Count < 1)
@@ -293,7 +293,7 @@ namespace Thom.Crtorrent
                     throw new FatalException("No announce url specified");
                 }
                 if (outputFile == null)
-                    outputFile = String.Format("{0}.torrent", Path.GetFileNameWithoutExtension(Path));
+                    outputFile = String.Format("{0}.torrent", Path.GetFileNameWithoutExtension(path));
 
                 if (File.Exists(outputFile))
                     throw new FatalException(String.Format("{0} already exists", outputFile));
@@ -305,7 +305,7 @@ namespace Thom.Crtorrent
                     Console.WriteLine("NumThreads:    {0}", numThreads);
                     Console.WriteLine("Output file:   {0}", outputFile);
                     Console.WriteLine("Private:       {0}", PrivateFlag);
-                    Console.WriteLine("Path:          {0}", Path);
+                    Console.WriteLine("Path:          {0}", path);
                     Console.WriteLine("Announce urls: ");
                     foreach (string url in AnnounceUrls)
                     {
@@ -316,9 +316,9 @@ namespace Thom.Crtorrent
 
 
                 //beginnen maar
-                Metafile metafile = new Metafile(Path, AnnounceUrls.ToArray(), PrivateFlag, DateFlag, comment, outputFile, numThreads, Math.Pow(2,18), APP_NAME + " " + APP_VERSION, cancelToken);
+                Metafile metafile = new Metafile(path, AnnounceUrls.ToArray(), PrivateFlag, DateFlag, comment, outputFile, numThreads, Math.Pow(2,18), APP_NAME + " " + APP_VERSION, cancelToken);
 
-                File.WriteAllBytes(outputFile, metafile.Metafile.ToBytes());
+                File.WriteAllBytes(outputFile, metafile.metafile.ToBytes());
                 
 
                 

@@ -25,7 +25,7 @@ namespace Thom.Crtorrent
 		/// <summary>
 		/// The metafile as a Bencode Dictionary.
 		/// </summary>
-		private BencodeDictionary metafile;
+		internal BencodeDictionary metafile;
         
 		/// <summary>
 		/// The hasher.
