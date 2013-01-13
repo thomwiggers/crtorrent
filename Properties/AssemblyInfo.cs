@@ -7,12 +7,12 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("crtorrent")]
 [assembly: AssemblyDescription("crtorrent is a metafile creator")]
-[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyConfiguration(string.Empty)]
 [assembly: AssemblyCompany("Thom Wiggers")]
 [assembly: AssemblyProduct("crtorrent")]
-[assembly: AssemblyCopyright("Copyright © Thom Wiggers 2011 (GPL License)")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
+[assembly: AssemblyCopyright("Copyright © Thom Wiggers 2011-2013 (GPL License)")]
+[assembly: AssemblyTrademark(string.Empty)]
+[assembly: AssemblyCulture(string.Empty)]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 

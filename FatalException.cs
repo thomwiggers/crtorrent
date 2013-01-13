@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 /**
  * crtorrent's  Exception for situations that force us to end
  * 
