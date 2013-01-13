@@ -4,7 +4,7 @@
  * Hashing helper
  * 
     crtorrent creates torrent metainfo files from directories and files.
-    Copyright (C) 2011  Thom Wiggers
+    Copyright (C) 2011-2013  Thom Wiggers
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ using System.IO.MemoryMappedFiles;
 using System.Diagnostics;
 using System.Security.Cryptography;
 
-namespace crtorrent 
+namespace Thom.Crtorrent 
 {
 	class Hasher
 	{

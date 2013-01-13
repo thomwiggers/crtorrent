@@ -4,7 +4,7 @@
  *  Bencode String Container
  * 
     crtorrent creates torrent metainfo files from directories and files.
-    Copyright (C) 2011  Thom Wiggers
+    Copyright (C) 2011-2013  Thom Wiggers
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ using System;
 using System.Text;
 using System.Linq;
 using System.Collections.Generic;
-namespace crtorrent.Bencode
+namespace Thom.Bencode
 {
     internal class BencodeString : IBencodeItem
     {

@@ -1,10 +1,9 @@
-﻿/**
- * crtorrent
+/**
+ * crtorrent utility class for Chunks
  * 
- *  Interface implementation of Bencode Items
  * 
     crtorrent creates torrent metainfo files from directories and files.
-    Copyright (C) 2011  Thom Wiggers
+    Copyright (C) 2011-2013  Thom Wiggers
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,11 +18,22 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-namespace crtorrent.Bencode
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Thom.Crtorrent
 {
-    internal interface IBencodeItem
+    
+    internal class Chunk
     {
-        string ToString();
-        byte[] ToBytes();
+        private List<ChunkSource> _sources = new List<ChunkSource>();
+
+        internal IList<ChunkSource> Sources { get { return _sources; } }
+        internal byte[] Hash { get; set; }
+        internal long Length
+        {
+            get { return Sources.Select(s => s.Length).Sum(); }
+        }
     }
 }

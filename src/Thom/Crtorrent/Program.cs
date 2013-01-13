@@ -4,7 +4,7 @@
  * Entry point of executable
  * 
     crtorrent creates torrent metainfo files from directories and files.
-    Copyright (C) 2011  Thom Wiggers
+    Copyright (C) 2011-2013  Thom Wiggers
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Text;
 
-namespace crtorrent
+namespace Thom.Crtorrent
 {
     class Program
     {
@@ -302,7 +302,7 @@ namespace crtorrent
                     Console.WriteLine(@"
 crtorrent creates torrent metainfo files from directories and files.
 
-Copyright (C) 2011  Thom Wiggers
+Copyright (C) 2011-2013  Thom Wiggers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -324,7 +324,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.");
                     break;
                 case INTRO:
                     Console.WriteLine(@"
-        crtorrent  Copyright (C) 2011  Thom Wiggers
+        crtorrent  Copyright (C) 2011-2013  Thom Wiggers
 This program comes with ABSOLUTELY NO WARRANTY; for details type `-copyright'.
 This is free software, and you are welcome to redistribute it
 under certain conditions; type `-copyright' for details.

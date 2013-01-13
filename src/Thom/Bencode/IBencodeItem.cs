@@ -1,11 +1,10 @@
-using System;
-/**
- * crtorrent's Exception for invalid arguments
+﻿/**
+ * crtorrent
  * 
- * InvalidArgumentException
+ *  Interface implementation of Bencode Items
  * 
     crtorrent creates torrent metainfo files from directories and files.
-    Copyright (C) 2011  Thom Wiggers
+    Copyright (C) 2011-2013  Thom Wiggers
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,21 +19,11 @@ using System;
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-namespace crtorrent
+namespace Thom.Bencode
 {
-    internal class InvalidArgumentException : Exception
+    internal interface IBencodeItem
     {
-        internal InvalidArgumentException()
-            : base()
-        { 
-            
-        }
-        internal InvalidArgumentException(string message)
-            : base(message)
-        { }
-        internal InvalidArgumentException(string message, Exception innerException)
-            : base(message, innerException)
-        { }
+        string ToString();
+        byte[] ToBytes();
     }
 }
-

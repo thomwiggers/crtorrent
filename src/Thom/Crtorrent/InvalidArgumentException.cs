@@ -1,9 +1,11 @@
+using System;
 /**
- * crtorrent utility class for Chunks
+ * crtorrent's Exception for invalid arguments
  * 
+ * InvalidArgumentException
  * 
     crtorrent creates torrent metainfo files from directories and files.
-    Copyright (C) 2011  Thom Wiggers
+    Copyright (C) 2011-2013  Thom Wiggers
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,12 +20,22 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-namespace crtorrent
+
+namespace Thom.Crtorrent
 {
-    internal class ChunkSource
+    internal class InvalidArgumentException : Exception
     {
-        internal string Filename { get; set; }
-        internal long StartPosition { get; set; }
-        internal long Length { get; set; }
+        internal InvalidArgumentException()
+            : base()
+        { 
+            
+        }
+        internal InvalidArgumentException(string message)
+            : base(message)
+        { }
+        internal InvalidArgumentException(string message, Exception innerException)
+            : base(message, innerException)
+        { }
     }
 }
+

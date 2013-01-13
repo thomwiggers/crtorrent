@@ -1,9 +1,11 @@
+using System;
 /**
- * crtorrent utility class for Chunks
+ * crtorrent's  Exception for situations that force us to end
  * 
+ * Exception
  * 
     crtorrent creates torrent metainfo files from directories and files.
-    Copyright (C) 2011  Thom Wiggers
+    Copyright (C) 2011-2013  Thom Wiggers
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,21 +20,34 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-using System;
-using System.Collections.Generic;
-using System.Linq;
-namespace crtorrent
-{
-    
-    internal class Chunk
-    {
-        private List<ChunkSource> _sources = new List<ChunkSource>();
 
-        internal IList<ChunkSource> Sources { get { return _sources; } }
-        internal byte[] Hash { get; set; }
-        internal long Length
+namespace Thom.Crtorrent
+{
+
+    internal class FatalException : Exception
+    {
+        internal FatalException() 
+            : base("ERROR: FATAL ERROR")
         {
-            get { return Sources.Select(s => s.Length).Sum(); }
+
+        }
+
+        internal FatalException(String message)
+            : base(message)
+        {
+
+        }
+
+        internal FatalException(String message, Exception innerException)
+            : base(message, innerException)
+        {
+
+        }
+
+        internal FatalException(Exception innerException)
+            : base(innerException.Message, innerException)
+        {
+
         }
     }
 }
