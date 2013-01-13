@@ -1,4 +1,6 @@
-Build using make.bat on windows, or use make.sh on Linux/Unix systems.
+Build using either the C# or the mono compiler. 
+
+Makefile TODO
 
 System requirements:
 ========================
