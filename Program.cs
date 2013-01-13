@@ -1,4 +1,4 @@
-﻿/**
+/**
  * crtorrent's central class
  * 
  * Entry point of executable

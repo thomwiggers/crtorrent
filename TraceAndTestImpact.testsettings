@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <TestSettings name="Trace and Test Impact" id="b71fac29-e67e-48f5-ba12-ee343a6617b1" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Description>These are test settings for Trace and Test Impact.</Description>
   <Execution>
