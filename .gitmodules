@@ -1,0 +1,3 @@
+[submodule "lib/Bencode"]
+	path = lib/Bencode
+	url = git@github.com:thomwiggers/bencode.git
