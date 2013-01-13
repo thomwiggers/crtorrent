@@ -5,6 +5,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Thom.Crtorrent", "src\Thom.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Thom.Bencode", "lib\Bencode\src\Thom.Bencode\Thom.Bencode.csproj", "{625886A2-3D4D-4420-A2D1-290706E98A9E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Thom.CrtorrentTests", "tests\Thom.CrtorrentTests\Thom.CrtorrentTests.csproj", "{05D421E5-F552-4BFC-A947-C14CCE1A3F09}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Thom.BencodeTests", "lib\Bencode\tests\Thom.BencodeTests\Thom.BencodeTests.csproj", "{5F2CEDB9-B826-4332-BF6A-BBF95848877A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -15,6 +19,14 @@ Global
 		{002DC980-A470-4803-AC18-1DF01A7F4E6E}.Debug|x86.Build.0 = Debug|x86
 		{002DC980-A470-4803-AC18-1DF01A7F4E6E}.Release|x86.ActiveCfg = Release|x86
 		{002DC980-A470-4803-AC18-1DF01A7F4E6E}.Release|x86.Build.0 = Release|x86
+		{05D421E5-F552-4BFC-A947-C14CCE1A3F09}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{05D421E5-F552-4BFC-A947-C14CCE1A3F09}.Debug|x86.Build.0 = Debug|Any CPU
+		{05D421E5-F552-4BFC-A947-C14CCE1A3F09}.Release|x86.ActiveCfg = Release|Any CPU
+		{05D421E5-F552-4BFC-A947-C14CCE1A3F09}.Release|x86.Build.0 = Release|Any CPU
+		{5F2CEDB9-B826-4332-BF6A-BBF95848877A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5F2CEDB9-B826-4332-BF6A-BBF95848877A}.Debug|x86.Build.0 = Debug|Any CPU
+		{5F2CEDB9-B826-4332-BF6A-BBF95848877A}.Release|x86.ActiveCfg = Release|Any CPU
+		{5F2CEDB9-B826-4332-BF6A-BBF95848877A}.Release|x86.Build.0 = Release|Any CPU
 		{625886A2-3D4D-4420-A2D1-290706E98A9E}.Debug|x86.ActiveCfg = Debug|x86
 		{625886A2-3D4D-4420-A2D1-290706E98A9E}.Debug|x86.Build.0 = Debug|x86
 		{625886A2-3D4D-4420-A2D1-290706E98A9E}.Release|x86.ActiveCfg = Release|x86
