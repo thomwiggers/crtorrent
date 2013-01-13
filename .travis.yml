@@ -1,0 +1,13 @@
+language: c
+
+install:
+  - sudo apt-get install mon-devel mono-dmcs nunit
+ 
+script:
+  - git submodule update --init
+  - make
+  - nunit-console lib/Bencode/tests/Thom.BencodeTests/bin/Debug/Thom.BencodeTests.dll
+
+branches: 
+  only: 
+    - twopointoh
