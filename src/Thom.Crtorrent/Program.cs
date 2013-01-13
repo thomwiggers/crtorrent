@@ -32,34 +32,106 @@ namespace Thom.Crtorrent
 {
     class Program
     {
-        private static CancellationTokenSource cancelToken = new CancellationTokenSource();
-        public const string appName = "crtorrent";
-        public const string version = "0.2 delta";
-        public const string fullVersionInformation = "beta build, Second release.";
+		/// <summary>
+		/// The cancel token.
+		/// </summary>
+		private static CancellationTokenSource cancelToken = new CancellationTokenSource();
+        
+		/// <summary>
+		/// The name of the application
+		/// </summary>
+		public const string APP_NAME = "crtorrent";
+
+		/// <summary>
+		/// The App version
+		/// </summary>
+        public const string APP_VERSION = "2.0 development";
+
+		/// <summary>
+		/// The Full Version info
+		/// </summary>
+        public const string FULL_VERSION_INFORMATION = "Refactored/rewritten release.";
+
+		/// <summary>
+		/// The Help command
+		/// </summary>
         const string HELP = "help";
+
+		/// <summary>
+		/// The copyright command
+		/// </summary>
         const string COPYRIGHT = "copyright";
+
+		/// <summary>
+		/// The version command.
+		/// </summary>
         const string VERSION = "version";
+
+		/// <summary>
+		/// The intro command
+		/// </summary>
         const string INTRO = "intro";
-        protected internal static string comment = "Created with crtorrent " + version;
-        // -1 means let C# decide.
+
+		/// <summary>
+		/// The comment used in the torrent file.
+		/// </summary>
+        protected internal static string comment = "Created with crtorrent " + APP_VERSION;
+        
+		/// <summary>
+		/// The number of threads.
+		/// </summary>
+		/// -1 means let C# decide.
         protected internal static int numThreads = -1;
-        protected internal static int NumThreads
+        
+		/// <summary>
+		/// Gets or sets the number of threads.
+		/// </summary>
+		/// <value>
+		/// The number of threads.
+		/// </value>
+		protected internal static int NumThreads
         {
             get { return numThreads; }
             set { if (value > 0) { numThreads = value; } }
         }
 
-        protected internal static bool privateFlag = false;
-        protected internal static bool verboseFlag = false;
-        protected internal static bool dateFlag = true;
-        protected internal static string name = string.Empty;
-        protected internal static HashSet<string> announceUrls = new HashSet<string>();
+		/// <summary>
+		/// The private flag.
+		/// </summary>
+        protected internal static bool PrivateFlag = false;
+
+		/// <summary>
+		/// The verbose output flag.
+		/// </summary>
+        protected internal static bool VerboseFlag = false;
+
+		/// <summary>
+		/// The date flag.
+		/// </summary>
+        protected internal static bool DateFlag = true;
+
+		/// <summary>
+		/// The name.
+		/// </summary>
+		protected internal static string Name = string.Empty;
+
+		/// <summary>
+		/// The announce urls.
+		/// </summary>
+        protected internal static HashSet<string> AnnounceUrls = new HashSet<string>();
+
+		/// <summary>
+		/// Sets the announce URL.
+		/// </summary>
+		/// <value>
+		/// The announce URL.
+		/// </value>
         private static string AnnounceUrl
         {
             set {
                 if (Uri.IsWellFormedUriString(value, UriKind.Absolute)) 
                 { 
-                    announceUrls.Add(value);
+                    AnnounceUrls.Add(value);
                 }
                 else if (value.Contains(","))
                 {
@@ -70,25 +142,49 @@ namespace Thom.Crtorrent
                 }
             }
         }
-        protected internal static string path = "";
-        protected internal static double pieceLength = Math.Pow(2,18);
-        private static double PieceLength
+
+		/// <summary>
+		/// The path.
+		/// </summary>
+        protected internal static string Path = "";
+        
+		/// <summary>
+		/// The length of the piece.
+		/// </summary>
+		private static double pieceLength = Math.Pow(2,18);
+
+		/// <summary>
+		/// Gets or sets the length of the piece.
+		/// </summary>
+		/// <value>
+		/// The length of the piece.
+		/// </value>
+        protected static double PieceLength
         {
-            get { return pieceLength; }
+            get;
             set
             {
                 pieceLength = Math.Pow(2, value < 18 && value >30 ? 18 : value);
             }
         }
 
+		/// <summary>
+		/// The output file.
+		/// </summary>
         private static string outputFile = null;
 
+		/// <summary>
+		/// The entry point of the program, where the program control starts and ends.
+		/// </summary>
+		/// <param name='args'>
+		/// The command-line arguments.
+		/// </param>
         public static void Main(string[] args)
         {
             try
             {
                 Console.TreatControlCAsInput = false;
-                Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
+                Console.CancelKeyPress += new ConsoleCancelEventHandler(ConsoleCancelKeyPress);
 
                 PrintSection(INTRO);
                 args = Environment.GetCommandLineArgs();
@@ -134,19 +230,19 @@ namespace Thom.Crtorrent
                                     break;
                                 case "p":
                                 case "private":
-                                    privateFlag = true;
+                                    PrivateFlag = true;
                                     break;
                                 case "v":
                                 case "verbose":
-                                    verboseFlag = true;
+                                    VerboseFlag = true;
                                     break;
                                 case "no-date":
                                 case "d":
-                                    dateFlag = false;
+                                    DateFlag = false;
                                     break;
                                 case "name":
                                 case "n":
-                                    name = args[i + 1];
+                                    Name = args[i + 1];
                                     break;
                             }
                         }
@@ -189,29 +285,29 @@ namespace Thom.Crtorrent
                         throw new FatalException("Error: No target specified");
                 }
 
-                path = args[args.Length - 1];
+                Path = args[args.Length - 1];
                            
                 //validatie:
-                if (announceUrls.Count < 1)
+                if (AnnounceUrls.Count < 1)
                 {
                     throw new FatalException("No announce url specified");
                 }
                 if (outputFile == null)
-                    outputFile = String.Format("{0}.torrent", Path.GetFileNameWithoutExtension(path));
+                    outputFile = String.Format("{0}.torrent", Path.GetFileNameWithoutExtension(Path));
 
                 if (File.Exists(outputFile))
                     throw new FatalException(String.Format("{0} already exists", outputFile));
-                if (verboseFlag)
+                if (VerboseFlag)
                 {
                     Console.WriteLine("################# DETAILS ########################");
                     Console.WriteLine("comment:       {0}", comment);
                     Console.WriteLine("Piece Lenghth  {0}", PieceLength.ToString());
                     Console.WriteLine("NumThreads:    {0}", numThreads);
                     Console.WriteLine("Output file:   {0}", outputFile);
-                    Console.WriteLine("Private:       {0}", privateFlag);
-                    Console.WriteLine("Path:          {0}", path);
+                    Console.WriteLine("Private:       {0}", PrivateFlag);
+                    Console.WriteLine("Path:          {0}", Path);
                     Console.WriteLine("Announce urls: ");
-                    foreach (string url in announceUrls)
+                    foreach (string url in AnnounceUrls)
                     {
                         Console.WriteLine("  Url:         {0}", url);
                     }
@@ -220,9 +316,9 @@ namespace Thom.Crtorrent
 
 
                 //beginnen maar
-                Metafile metafile = new Metafile(path, announceUrls.ToArray(), privateFlag, dateFlag, comment, outputFile, numThreads, Math.Pow(2,18), appName + " " + version, cancelToken);
+                Metafile metafile = new Metafile(Path, AnnounceUrls.ToArray(), PrivateFlag, DateFlag, comment, outputFile, numThreads, Math.Pow(2,18), APP_NAME + " " + APP_VERSION, cancelToken);
 
-                File.WriteAllBytes(outputFile, metafile.metafile.ToBytes());
+                File.WriteAllBytes(outputFile, metafile.Metafile.ToBytes());
                 
 
                 
@@ -233,11 +329,11 @@ namespace Thom.Crtorrent
             {
                 Console.WriteLine("A fatal error occurred, and I could not continue: \r\n");
                 Console.WriteLine(e.Message);
-                if (e.InnerException != null && verboseFlag)
+                if (e.InnerException != null && VerboseFlag)
                 {
                     Console.WriteLine("@@@Inner Exception: {0}", e.Message); 
                 }
-                if (verboseFlag)
+                if (VerboseFlag)
                 {
                     Console.WriteLine(e.StackTrace);
                 }
@@ -245,7 +341,16 @@ namespace Thom.Crtorrent
             }
         }
 
-        static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+		/// <summary>
+		/// Handles the cancel event.
+		/// </summary>
+		/// <param name='sender'>
+		/// Sender.
+		/// </param>
+		/// <param name='e'>
+		/// E.
+		/// </param>
+        static void ConsoleCancelKeyPress(object sender, ConsoleCancelEventArgs e)
         {
             Console.WriteLine("Intercepted CancelKeyPress");
             Console.WriteLine("Aborting...");
@@ -254,27 +359,57 @@ namespace Thom.Crtorrent
             throw new NotImplementedException();
         }
 
-
+		/// <summary>
+		/// Makes a double from a string
+		/// </summary>
+		/// <returns>
+		/// The double.
+		/// </returns>
+		/// <param name='value'>
+		/// Value.
+		/// </param>
+		/// <param name='parameter'>
+		/// Parameter.
+		/// </param>
         static double MakeDouble(string value, string parameter = "")
         {
             double result = 0;
             if(!double.TryParse(value, out result)){
-                throw new InvalidArgumentException("ERORR: Parameter \"" + parameter +"\" needs to be a number");
+                throw new InvalidArgumentException("ERROR: Parameter \"" + parameter +"\" needs to be a number");
             }
             return result;
 
         }
+
+		/// <summary>
+		/// Make an int from a string
+		/// </summary>
+		/// <returns>
+		/// The int.
+		/// </returns>
+		/// <param name='value'>
+		/// Value.
+		/// </param>
+		/// <param name='parameter'>
+		/// Parameter.
+		/// </param>
         static int MakeInt(string value, string parameter = "")
         {
             int result = 0;
             if (!int.TryParse(value, out result))
             {
-                throw new InvalidArgumentException("ERORR: Parameter \"" + parameter + "\" needs to be a number");
+                throw new InvalidArgumentException("ERROR: Parameter \"" + parameter + "\" needs to be a number");
             }
             return result;
 
         }
 
+		/// <summary>
+		/// Prints sections section.
+		/// </summary>
+		/// <param name='section'>
+		/// Section.
+		/// </param>
         static void PrintSection(string section)
         {
             switch (section)
@@ -307,7 +442,7 @@ Copyright (C) 2011-2013  Thom Wiggers
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -318,9 +453,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.");
                     break;
                 case VERSION:
-                    Console.WriteLine("This is crtorrent version {0} © {1} Thom Wiggers",version, DateTime.UtcNow.Year);
-                    Console.WriteLine(fullVersionInformation);
-                    Console.WriteLine("This software is available under the GPL Public License");
+                    Console.WriteLine("This is crtorrent version {0} © {1} Thom Wiggers", APP_VERSION, DateTime.UtcNow.Year);
+                    Console.WriteLine(FULL_VERSION_INFORMATION);
+                    Console.WriteLine("This software is available under the GPL Public License version 3");
                     break;
                 case INTRO:
                     Console.WriteLine(@"
@@ -329,7 +464,7 @@ This program comes with ABSOLUTELY NO WARRANTY; for details type `-copyright'.
 This is free software, and you are welcome to redistribute it
 under certain conditions; type `-copyright' for details.
 
-Version number: " + version + "\r\n\r\n");
+Version number: " + APP_VERSION + "\r\n\r\n");
                     break;
 
             }
