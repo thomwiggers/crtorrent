@@ -1,7 +1,7 @@
 language: c
 
 install:
-  - sudo apt-get install mon-devel mono-dmcs nunit
+  - sudo apt-get install mono-devel mono-dmcs nunit
  
 script:
   - git submodule update --init
